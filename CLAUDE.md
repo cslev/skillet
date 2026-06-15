@@ -2,6 +2,12 @@
 
 A curated collection of Claude Code skills and skill suites.
 
+## Knowledge base
+
+Read this before building or reviewing any skill:
+
+- @knowledge/skill-design-principles.md — skill architecture principles (loader levels, progressive disclosure, antipatterns, quality checklist)
+
 ## Repo structure
 
 ```
