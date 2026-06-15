@@ -35,6 +35,7 @@ See `suites/project-docs/README.md` for install instructions and usage.
 - **`grill-me`** — one-question-at-a-time design/plan interview with a resumable `checkpoint.md`. Triggers on `/grill-me`, "grill-me", or "brainstorm". → [skills/grill-me/SKILL.md](skills/grill-me/SKILL.md)
 - **`caveman`** — ultra-compressed ~75% token reduction mode that drops filler while keeping full technical accuracy. Triggers on `/caveman`, "caveman mode", or "less tokens". → [skills/caveman/SKILL.md](skills/caveman/SKILL.md)
 - **`handoff`** — compacts the current conversation into a resumable handoff document saved to the OS temp dir, so a fresh agent can continue without re-reading the full chat. → [skills/handoff/SKILL.md](skills/handoff/SKILL.md)
+- **`humanizer`** — removes AI writing patterns (em dashes, significance inflation, rule-of-three, AI vocabulary, etc.) from text using a 33-pattern taxonomy with Before/After examples. Triggers on "humanize", "remove AI writing", "make this sound human". → [skills/humanizer/SKILL.md](skills/humanizer/SKILL.md)
 
 ---
 
