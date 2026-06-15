@@ -12,3 +12,7 @@ desktop.ini
 
 # Claude Code local data (sessions, memory, personal settings)
 .claude/
+
+# samples/ directories hold private org files (templates, reference docs)
+**/samples/*
+!**/samples/README.md

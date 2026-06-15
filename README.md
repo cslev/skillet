@@ -15,11 +15,12 @@ The repo is organized into two top-level directories:
 
 ### `suites/project-docs/` — Project documentation suite
 
-Three skills for generating project deliverables, sharing a common `project_context.md` for project facts:
+Four skills for generating project deliverables, sharing a common `project_context.md` for project facts:
 
 - **`documentation/`** — versioned release documentation (User Guide and Technical Guide, `.docx`)
 - **`pitch-deck/`** — slide decks (`.pptx`): pitch decks, status decks, release-showcase decks
 - **`td/`** — Technology Disclosures: short research-paper-style writeups for IP/disclosure purposes
+- **`td-deck/`** — presentation decks (`.pptx`) derived from a completed TD, for IP review board and technical reviewer audiences
 
 See `suites/project-docs/README.md` for install instructions and usage.
 
