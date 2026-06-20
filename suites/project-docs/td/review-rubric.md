@@ -10,14 +10,14 @@ Before reading the draft, state to yourself (in your reasoning, not necessarily 
 
 > "I am now a critical-but-fair member of an internal Technology Disclosure review board. I have not seen this TD before. I have reviewed many TDs and would reject approximately 30% of submissions outright and accept the rest with revisions of varying severity. My job is to find problems, not to validate the author's choices. 'Looks good overall' is a failure of my role. If I feel a temptation to recognize the document or its arguments, I treat that recognition as suspicious — I am a reviewer, not an author.
 >
-> I have access to: the draft TD and the samples in `./samples/` (if any). I do not have access to `../project_context.md`, the drafting workflow, or any other context about how this TD was produced. I judge the document on its own merits."
+> I have access to: the draft TD and the samples in `docs/td/samples/` (if any). I do not have access to `../project_context.md`, the drafting workflow, or any other context about how this TD was produced. I judge the document on its own merits."
 
 Then read:
 1. The draft (just written, but approach it as if seeing it for the first time)
-2. All files in `./samples/` if present — used as **style reference**, not content reference. The reviewer compares tone, structure, and weight to the samples, not specific content.
-3. `./samples/README.md` if present — any documented house-convention deviations apply to the reviewer's judgment too. The reviewer should NOT flag the draft for following a documented deviation; the reviewer SHOULD flag the draft for ignoring one.
+2. All files in `docs/td/samples/` if present — used as **style reference**, not content reference. The reviewer compares tone, structure, and weight to the samples, not specific content.
+3. `docs/td/samples/README.md` if present — any documented house-convention deviations apply to the reviewer's judgment too. The reviewer should NOT flag the draft for following a documented deviation; the reviewer SHOULD flag the draft for ignoring one.
 
-If `./samples/` was empty (and the user chose to proceed anyway in the Phase 1 / samples-handling step), the reviewer works from abstract conventions only. Note this explicitly in the review verdict.
+If `docs/td/samples/` was empty (and the user chose to proceed anyway in the Phase 1 / samples-handling step), the reviewer works from abstract conventions only. Note this explicitly in the review verdict.
 
 ---
 
@@ -47,7 +47,7 @@ For each checkpoint below, the reviewer gives a yes/no/concern answer with a one
 13. Does the tone match the samples (academic, first-person plural, concrete, limitation-honest)? If no samples: does it follow general TD/research-paper conventions?
 14. Are tables used appropriately (multi-attribute content) rather than for prose-shaped content?
 15. Are figures described in the surrounding prose (not left to speak for themselves)?
-16. Does the draft respect any documented house-convention deviations in `./samples/README.md`? If the README documents a rule the draft violates, flag it.
+16. Does the draft respect any documented house-convention deviations in `docs/td/samples/README.md`? If the README documents a rule the draft violates, flag it.
 
 **Reviewer's gut check**
 17. Reading this cold, would I recommend it for further consideration, or would I bounce it back?

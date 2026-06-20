@@ -2,7 +2,7 @@
 
 > **This file is a starting template. Replace the placeholder content below with the actual slide structure of your `template.pptx`.** The skill reads this file to know how to map TD sections to your template's slides. The more precise and accurate this file is, the better the generated deck will be.
 >
-> This file lives in `./samples/` and is gitignored — safe to include company-specific details here.
+> Copy this file to `docs/td-decks/samples/specific_instructions.md` in your project and customize it there — that location is gitignored, so it's safe to include company-specific details.
 
 ---
 

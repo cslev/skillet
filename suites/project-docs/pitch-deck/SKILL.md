@@ -51,8 +51,8 @@ Then proceed immediately to Step 1. No further preamble.
 Before writing any code or generating any slides:
 
 1. Read `../project_context.md` — authoritative facts about the project. Everything in the deck must be consistent with this file.
-2. Locate the project's deck/documentation directory (see "Locating the output directory" below).
-3. Read the most recent `.pptx` file in that directory, if one exists — for visual style/template reference only, not for content. Older projects may have pre-existing change-summary decks from before this skill suite took over slide-deck generation; ignore their content structure entirely and just borrow color/font/layout cues.
+2. Run the Bootstrap check (see below) — creates output and samples directories if missing.
+3. Read the most recent `.pptx` file in `docs/decks/`, if one exists — for visual style/template reference only, not for content. Older projects may have pre-existing change-summary decks from before this skill suite took over slide-deck generation; ignore their content structure entirely and just borrow color/font/layout cues.
 
 For producing the `.pptx` file itself, use `python-pptx` via a Python script.
 
@@ -60,12 +60,31 @@ If no existing `.pptx` is present in the project, generate a clean, modern style
 
 ---
 
+## Bootstrap — first-time setup check
+
+Run this before anything else, every invocation:
+
+1. Check whether `docs/decks/` exists at the project root.
+2. **If it does not exist**, create both directories:
+   ```bash
+   mkdir -p docs/decks/samples/
+   ```
+   Then tell the user:
+   > "`docs/decks/` did not exist — created it along with `docs/decks/samples/`. You can optionally drop reference `.pptx` files (previous decks, style templates) into `docs/decks/samples/` — the skill borrows visual cues (colors, fonts, layouts) from them. This is optional; if you have no reference decks, I'll generate a clean modern style from scratch. Tell me to proceed when ready."
+
+   Wait for the user's response before continuing to Step 1.
+
+3. **If `docs/decks/` exists** but `docs/decks/samples/` does not, create it silently and proceed.
+
+---
+
 ## Locating the output directory
 
-This skill is project-generic. Determine where decks should live:
+The canonical output directory is `docs/decks/` at the project root — created during Bootstrap if it didn't exist.
 
-1. Check (in order): `documentations/`, `docs/decks/`, `decks/`, `pitch/`, `docs/`. Use the first one that exists and contains either release docs or other decks.
-2. If multiple plausible directories exist or none does, ask the user where pitch decks should go.
+**Exception:** if the project already stores decks elsewhere (e.g. `documentations/`, `decks/`, `pitch/`) and `docs/decks/` was not created by Bootstrap, ask the user to confirm which directory to use rather than creating a duplicate alongside an existing one.
+
+**Visual style reference:** read the most recent `.pptx` in `docs/decks/` (or `docs/decks/samples/` if present) for color/font/layout cues. If no existing decks are found in either place, generate a clean modern default — neutral palette, generous whitespace.
 
 Filenames derive from the project name in `../project_context.md` plus mode/frame and date — see Step 1.
 
@@ -115,7 +134,7 @@ Ask the user before generating. **The first question is the most important** bec
 
 If a fact you need for the deck isn't in `../project_context.md`, ask the user rather than inventing it.
 
-**In mode (a)** (fresh introduction), `../project_context.md` is the only source. Do not read release docs in the docs directory — they're aimed at a different audience. Proceed to Step 3.
+**In mode (a)** (fresh introduction), `../project_context.md` is the only source. Do not read release docs in `docs/releases/` — they're aimed at a different audience. Proceed to Step 3.
 
 **In mode (b)** (what's-new), the source strategy depends on the comparison frame.
 
@@ -125,7 +144,7 @@ If a fact you need for the deck isn't in `../project_context.md`, ask the user r
 
 The deck is about a specific release. If release docs for that version exist, they ARE the curated answer. Check tiers:
 
-**Tier 1 — Release docs for the new version exist** in the docs directory (User Guide and/or Technical Guide for `<NEW>`). **Prefer them as the source of truth.** They've already been generated through the documentation skill (or by the user manually) and the change inventory was validated. Read both guides if both exist; the User Guide framing tends to be more pitch-friendly (operational impact, user-facing capability), while the Technical Guide gives the implementation depth a technical attendee may ask about. The `[New in v<NEW>]` markers in those docs are authoritative — every item carrying that marker is a candidate for the pitch deck.
+**Tier 1 — Release docs for the new version exist** in `docs/releases/` (User Guide and/or Technical Guide for `<NEW>`). **Prefer them as the source of truth.** They've already been generated through the documentation skill (or by the user manually) and the change inventory was validated. Read both guides if both exist; the User Guide framing tends to be more pitch-friendly (operational impact, user-facing capability), while the Technical Guide gives the implementation depth a technical attendee may ask about. The `[New in v<NEW>]` markers in those docs are authoritative — every item carrying that marker is a candidate for the pitch deck.
 
 Do **not** re-run git log or re-read the changelog when Tier 1 applies. The markers in the guides already encode that work.
 
@@ -135,7 +154,7 @@ git log <previous-version-tag>..<new-version-tag-or-HEAD> --oneline --no-merges
 ```
 Mention to the user once: "I don't have v<NEW> release docs, so I'm building from the v<PREVIOUS> docs plus changelog and git log. You may want to run the documentation skill first for a more reliable result."
 
-**Tier 3 — No release docs in the docs directory at all.** Fall back to gathering change signal from scratch via the changelog, git log, and code inspection.
+**Tier 3 — No release docs in `docs/releases/` at all.** Fall back to gathering change signal from scratch via the changelog, git log, and code inspection.
 
 ---
 
@@ -211,7 +230,7 @@ Auto-generated diagrams in pitch decks consistently look amateur. A clean placeh
 Once the outline is approved:
 
 - Use `python-pptx` via a Python script to produce the file
-- Borrow visual cues (colors, fonts, title styles) from existing `.pptx` files in the docs directory if present; otherwise use a clean modern default
+- Borrow visual cues (colors, fonts, title styles) from existing `.pptx` files in `docs/decks/` or `docs/decks/samples/` if present; otherwise use a clean modern default
 - One idea per slide. If a slide needs more than ~5 bullets or ~60 words of body text, split it.
 - Speaker notes on every slide (full sentences, presenter script + diagram briefs)
 - Use canonical terminology from `../project_context.md`

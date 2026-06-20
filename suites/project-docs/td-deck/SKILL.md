@@ -30,29 +30,50 @@ A single `.pptx` presentation deck per request, derived entirely from the conten
 
 ---
 
+## Bootstrap — first-time setup check
+
+Run this before anything else, every invocation:
+
+1. Check whether `docs/td-decks/` exists at the project root.
+2. **If it does not exist**, create both directories:
+   ```bash
+   mkdir -p docs/td-decks/samples/
+   ```
+   Then tell the user:
+   > "`docs/td-decks/` did not exist — created it along with `docs/td-decks/samples/`. Before I proceed, consider adding:
+   > - `docs/td-decks/samples/template.pptx` — your organization's PowerPoint template (the deck will be built from it)
+   > - Any reference TD presentation decks (`.pptx`) alongside it — for additional visual calibration
+   >
+   > These are optional. Tell me to proceed now and I'll fall back to a default structure and ask how you'd like to proceed without a template."
+
+   Wait for the user's response before continuing to Phase 1.
+
+3. **If `docs/td-decks/` exists** but `docs/td-decks/samples/` does not, create it silently and proceed.
+
+---
+
 ## Samples handling
 
-The `./samples/` directory serves two purposes:
+The `docs/td-decks/samples/` directory serves two purposes:
 
 1. **`template.pptx`** (optional) — if present, used as the base for all deck generation. All slides, layouts, and styles are inherited from it.
 2. **Reference decks** (optional) — any other `.pptx` files, used for visual and structural calibration. Do not borrow content from them.
 
-**On startup, always check `./samples/` for both.** Specifically:
+**On startup, always check `docs/td-decks/samples/` for both.** Specifically:
 
-- Look for `./samples/template.pptx` — the template file. If found, load it via `Presentation('./samples/template.pptx')` and **inspect its structure before generating anything**: read every slide's title placeholder and content placeholders, note instructional/guidance text already in placeholders (this is template scaffolding — it must be replaced with real content, not appended to), note slide count limits per section, and identify slides that cannot be filled from the TD alone (see Phase 2).
-- Look for any other `.pptx` files in `./samples/` — read them for style cues.
-- If `./samples/README.md` exists, read it — it may document house-convention notes or deviations. These override what you'd infer from the files alone.
+- Look for `docs/td-decks/samples/template.pptx` — the template file. If found, load it via `Presentation('docs/td-decks/samples/template.pptx')` and **inspect its structure before generating anything**: read every slide's title placeholder and content placeholders, note instructional/guidance text already in placeholders (this is template scaffolding — it must be replaced with real content, not appended to), note slide count limits per section, and identify slides that cannot be filled from the TD alone (see Phase 2).
+- Look for any other `.pptx` files in `docs/td-decks/samples/` — read them for style cues.
+- If `docs/td-decks/samples/README.md` exists, read it — it may document house-convention notes or deviations. These override what you'd infer from the files alone.
 
-**If `./samples/` is empty or contains only `README.md`**: note the absence of both template and style references, but do not stop — continue to Phase 1. Both absences will be flagged in the hand-off summary.
+**If `docs/td-decks/samples/` is empty**: note the absence of both template and style references, but do not stop — continue to Phase 1. Both absences will be flagged in the hand-off summary.
 
 ---
 
 ## Locating the output directory
 
-Determine where decks should be saved:
+The canonical output directory is `docs/td-decks/` at the project root — created during Bootstrap if it didn't exist. Use it.
 
-1. Check (in order): `td-decks/`, `presentations/`, `docs/td-decks/`. Use the first one that exists.
-2. If none exists, default to creating `td-decks/` at the repo root, but confirm with the user first.
+**Exception:** if the project already stores TD decks elsewhere (e.g. `td-decks/`, `presentations/`) and `docs/td-decks/` was not created by Bootstrap, ask the user to confirm which directory to use rather than creating a duplicate.
 
 Output filename pattern: `<PROJECT>_TD_<same-slug-as-source-TD>_deck_<YYYY-MM-DD>.pptx`
 
@@ -79,16 +100,16 @@ Read the TD file end-to-end. Build an internal map of its sections before procee
 
 Already handled by "Samples handling" above. At this point you know:
 
-- Whether `./samples/template.pptx` exists → will use it as the generation base, or fall back
+- Whether `docs/td-decks/samples/template.pptx` exists → will use it as the generation base, or fall back
 - Whether reference style decks exist → will use them for visual calibration, or proceed without
 
 **If no `template.pptx` was found**: tell the user and offer two options:
 
-> "No `template.pptx` found in `./samples/`. How would you like to proceed?
+> "No `template.pptx` found in `docs/td-decks/samples/`. How would you like to proceed?
 > (a) Use a default TD presentation structure I'll propose — a standard layout for IP review board presentations, which you can adjust.
 > (b) Describe the outline yourself, slide by slide, and I'll build exactly what you specify."
 >
-> To use your own template in future runs, drop it into `./samples/template.pptx`.
+> To use your own template in future runs, drop it into `docs/td-decks/samples/template.pptx`.
 
 If the user picks **(a)**: proceed with the default structure defined in "Default outline" below. Confirm the proposed outline with the user before generating.
 
@@ -110,9 +131,14 @@ Read the TD file and map its sections to slide content. Every claim in the deck 
 
 #### When template.pptx is present
 
-Before mapping content, check for `./samples/specific_instructions.md`. If it exists, read it — it contains the slide-by-slide mapping for this specific template, including which TD sections feed which slides, slide count limits per section, and which slides require user input rather than TD content. Follow it exactly.
+Check for the slide-mapping file in this order:
 
-If `./samples/specific_instructions.md` does not exist, fall back to inspecting the template directly: read each slide's title placeholder to infer its purpose, then apply general judgment to map TD sections to slides. Note any slides whose purpose cannot be satisfied from the TD and flag them for the user.
+1. **`docs/td-decks/samples/specific_instructions.md`** — the user's filled-in version for their specific template. If present, read it and follow it exactly. It contains the slide-by-slide mapping, which TD sections feed which slides, slide count limits per section, and which slides require user input rather than TD content.
+
+2. **`.claude/skills/td-deck/specific_instructions.md`** — the starter template shipped with the skill. If the user-filled version doesn't exist yet, read this one. Then tell the user:
+   > "I used the starter `specific_instructions.md` from the skill's defaults — it's a generic template, not calibrated to your actual slide layout. For better results, copy `.claude/skills/td-deck/specific_instructions.md` to `docs/td-decks/samples/specific_instructions.md` and customize the slide mapping to match your `template.pptx`."
+
+If neither file exists, fall back to inspecting the template directly: read each slide's title placeholder to infer its purpose, then apply general judgment to map TD sections to slides. Note any slides whose purpose cannot be satisfied from the TD and flag them for the user.
 
 Regardless of source: **replace** any instructional or guidance text already in template content placeholders with real content — do not preserve or display it.
 
@@ -130,8 +156,8 @@ Share the extracted content map (slide-by-slide summary) with the user and ask t
 
 Once the content map is confirmed:
 
-- Load `./samples/template.pptx` if found; otherwise use a clean modern default (neutral palette, generous whitespace)
-- Borrow layout and density cues from other `.pptx` files in `./samples/` if present
+- Load `docs/td-decks/samples/template.pptx` if found; otherwise use a clean modern default (neutral palette, generous whitespace)
+- Borrow layout and density cues from other `.pptx` files in `docs/td-decks/samples/` if present
 - One idea per slide. If a slide needs more than ~5 bullets or ~50 words of body text, split it
 - Speaker notes on every slide — full sentences, presenter script
 - Use canonical terminology from the TD throughout — no paraphrasing of technical terms
@@ -151,8 +177,8 @@ Then provide a short written summary:
 - Filename and location
 - Slide count and section breakdown
 - List of diagram placeholders still to be filled in
-- Whether `./samples/template.pptx` was used
-- Whether style reference decks were available — if not, flag that visual calibration was done without house-style samples
+- Whether `docs/td-decks/samples/template.pptx` was used
+- Whether style reference decks were available in `docs/td-decks/samples/` — if not, flag that visual calibration was done without house-style samples
 - Anything in the TD that was ambiguous and required a judgment call during content extraction
 
 ---

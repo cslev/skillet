@@ -44,39 +44,60 @@ The user reviews both and decides next steps. The skill does **not** auto-revise
 Before writing any code, generating any draft, or running the review pass:
 
 1. Read `../project_context.md` — authoritative facts about the project.
-2. Check `./samples/` — see "Samples handling" below for what to do based on what you find.
-3. Locate the TD output directory (see "Locating the TD output directory" below).
+2. Run the Bootstrap check (see below) — creates output and samples directories if missing.
+3. Check `docs/td/samples/` — see "Samples handling" below for what to do based on what you find.
 
 If `../project_context.md` has placeholder `<fill in: ...>` markers still unfilled and they're relevant to what the TD is about, stop and tell the user — the TD cannot be reliable until those are real.
 
 ---
 
+## Bootstrap — first-time setup check
+
+Run this before anything else, every invocation:
+
+1. Check whether `docs/td/` exists at the project root.
+2. **If it does not exist**, create both directories:
+   ```bash
+   mkdir -p docs/td/samples/
+   ```
+   Then tell the user:
+   > "`docs/td/` did not exist — created it along with `docs/td/samples/`. Before I continue, drop your organization's sample TDs (`.pdf` or `.docx`) into `docs/td/samples/`. The skill calibrates its tone, structure, and citation style against them. Add samples and re-invoke me, or tell me to proceed now and I'll work without calibration (output may not match your house style)."
+
+   Wait for the user's response before continuing to Phase 1.
+
+3. **If `docs/td/` exists** but `docs/td/samples/` does not, create it silently:
+   ```bash
+   mkdir -p docs/td/samples/
+   ```
+   Then proceed without stopping — the Samples handling section covers the empty-samples case.
+
+---
+
 ## Samples handling
 
-The `./samples/` directory holds reference TDs from the user's organization. They are used by both the drafter (for tone, structure, conventions) and the reviewer (for style reference during the self-review pass).
+The `docs/td/samples/` directory holds reference TDs from the user's organization. They are used by both the drafter (for tone, structure, conventions) and the reviewer (for style reference during the self-review pass).
 
-**If `./samples/` contains usable files** (`.pdf`, `.docx`, or `.md` files; ignore `README.md`): read all of them carefully. They are the calibration target for tone, section weight, citation style, table use, and figure conventions.
+**If `docs/td/samples/` contains usable files** (`.pdf`, `.docx`, or `.md` files; ignore `README.md`): read all of them carefully. They are the calibration target for tone, section weight, citation style, table use, and figure conventions.
 
-**If `./samples/` is empty or contains only `README.md`**: ask the user before proceeding:
+**If `docs/td/samples/` is empty**: ask the user before proceeding:
 
-> "I don't see any sample TDs in `./samples/`. The skill works best with at least one reference TD from your organization so the output matches your house style. You can:
-> (a) drop one or more `.pdf` / `.docx` TDs into `samples/` and re-invoke me, or
+> "I don't see any sample TDs in `docs/td/samples/`. The skill works best with at least one reference TD from your organization so the output matches your house style. You can:
+> (a) drop one or more `.pdf` / `.docx` TDs into `docs/td/samples/` and re-invoke me, or
 > (b) tell me to proceed anyway and I'll produce a best-effort TD using abstract conventions only (output may not match your org's specific style).
 >
 > What would you like to do?"
 
 If the user picks (b), proceed but include a brief note in the hand-off summary mentioning that the TD was generated without samples and may not match house style. Do not silently lower quality without flagging.
 
-**If `./samples/` contains a `README.md`**: read it — it may contain user-supplied notes about which samples illustrate which patterns, or about house-convention deviations from the samples (e.g. "samples name commercial competitors but house convention is generic descriptions"). These notes override what you'd infer from the samples alone.
+**If `docs/td/samples/` contains a `README.md`**: read it — it may contain user-supplied notes about which samples illustrate which patterns, or about house-convention deviations from the samples (e.g. "samples name commercial competitors but house convention is generic descriptions"). These notes override what you'd infer from the samples alone.
 
 ---
 
 ## Locating the TD output directory
 
-This skill is project-generic. Determine where TD drafts should go:
+The canonical output directory is `docs/td/` at the project root — created during Bootstrap if it didn't exist. Use it.
 
-1. Check (in order): `td/`, `tds/`, `disclosures/`, `docs/td/`. Use the first one that exists.
-2. If none exists, default to creating `td/` at the repo root, but ask the user first to confirm.
+**Exception:** if the project already stores TDs elsewhere (e.g. `td/`, `tds/`, `disclosures/`) and `docs/td/` was not created by Bootstrap (i.e. the project predates this convention), ask the user to confirm which directory to use rather than creating a duplicate alongside an existing one.
 
 ---
 
@@ -147,7 +168,7 @@ A TD's structure adapts to its content. Use the following section list as the me
 
 #### 2c. Write the draft
 
-Style rules (calibrated against `./samples/` when available; defaults below otherwise):
+Style rules (calibrated against `docs/td/samples/` when available; defaults below otherwise):
 
 - **Voice:** first person plural ("we developed," "we evaluate"). Academic but not stuffy. Use contractions sparingly.
 - **Numbers:** concrete, unhedged, with units. "92% accuracy" not "high accuracy." "700 Mbps" not "significant throughput."
@@ -158,7 +179,7 @@ Style rules (calibrated against `./samples/` when available; defaults below othe
 
 **House-convention deviations from samples:**
 
-The samples in `./samples/` may reflect older conventions that the user's organization has moved away from. Check `./samples/README.md` for any documented deviations — these override what you'd infer from the samples directly.
+The samples in `docs/td/samples/` may reflect older conventions that the user's organization has moved away from. Check `docs/td/samples/README.md` for any documented deviations — these override what you'd infer from the samples directly.
 
 A common example (which the user may or may not have): samples may name specific commercial competitors directly (by company and product name), while the current convention is to use generic descriptions. If the samples' README mentions this kind of rule, follow it. Otherwise, match the samples.
 
@@ -188,7 +209,7 @@ Then provide a short written summary:
 - The verdict from the self-review (so the user knows whether to expect heavy revisions)
 - A one-line preview of the most important blocking issue, if any
 - Anything in `../project_context.md` that was missing or incomplete, so the context file can be updated
-- If `./samples/` was empty: a reminder that the TD was generated without house-style calibration
+- If `docs/td/samples/` was empty: a reminder that the TD was generated without house-style calibration
 - The path for converting markdown → docx when the user is ready for submission (e.g., `pandoc <draft>.md -o <draft>.docx`)
 
 Do **not** apply the review's suggested rewrites automatically. The user decides what to do with the review. If they want rewrites applied, they ask in the next turn.

@@ -34,6 +34,15 @@ After install, your project's layout will look like:
 
 ```
 your-project/
+├── docs/                               ← created automatically on first skill invocation
+│   ├── td/
+│   │   └── samples/                   ← drop your org's reference TDs here
+│   ├── td-decks/
+│   │   └── samples/                   ← drop template.pptx and reference decks here
+│   ├── releases/
+│   │   └── samples/                   ← optional: reference docs for style calibration
+│   └── decks/
+│       └── samples/                   ← optional: reference .pptx files for visual cues
 └── .claude/
     └── skills/
         ├── README.md                   ← from this suite
@@ -41,12 +50,19 @@ your-project/
         ├── documentation/SKILL.md
         ├── pitch-deck/SKILL.md
         ├── td/
-        │   ├── SKILL.md
-        │   └── samples/README.md
+        │   └── SKILL.md
         └── td-deck/
             ├── SKILL.md
-            └── samples/README.md       ← drop template.pptx and reference decks here
+            └── specific_instructions.md  ← starter template; copy to docs/td-decks/samples/ and customize
 ```
+
+> **Note:** The `docs/` directories are **not** part of the skill install — they live in your project root and are created automatically the first time each skill runs (see "Bootstrap" below). The `docs/*/samples/` subdirectories hold user-provided reference material and should be added to your project's `.gitignore`:
+> ```
+> docs/td/samples/
+> docs/td-decks/samples/
+> docs/releases/samples/
+> docs/decks/samples/
+> ```
 
 **Cherry-picking individual skills:** if you only want some of the four, you can copy just those subfolders — but you still need `project_context.md`, since every skill reads from it. Note that `td-deck` depends on output from the `td` skill — installing one without the other is possible but you'll need to point it at a TD file manually.
 
@@ -76,9 +92,13 @@ your-project/
 
 3. **Skills auto-trigger.** You don't need to invoke them explicitly. Phrases like "create the user guide for v2.0" or "make me a pitch deck" or "write up a TD on this" will activate the right skill automatically. The YAML frontmatter `description` field in each `SKILL.md` controls what phrases trigger it.
 
-4. **For the TD skill specifically:** drop at least one sample TD (`.pdf` or `.docx`) into `td/samples/` before first use. The TD skill calibrates against samples to match your organization's conventions, and without any, output quality drops noticeably. The skill will ask if you want to proceed when samples are missing.
+4. **Bootstrap happens automatically on first invocation.** Each skill checks for its output directory (`docs/td/`, `docs/td-decks/`, `docs/releases/`, `docs/decks/`) at the start of every run. If the directory doesn't exist, the skill creates it along with a `samples/` subdirectory and pauses to tell you what to put there. This happens once per skill, the first time you use it in a project.
 
-5. **For the TD Deck skill:** drop your organization's PowerPoint template into `td-deck/samples/template.pptx`. Without it the skill falls back to a default structure and will ask you how to proceed. You can also drop reference TD presentation decks (`.pptx`) into the same `samples/` folder for additional visual calibration.
+5. **Drop samples before first use — or tell the skill to proceed without them.**
+   - **TD skill:** drop at least one sample TD (`.pdf` or `.docx`) into `docs/td/samples/`. The skill calibrates tone, structure, and citation style against them. Without samples, it will ask whether to proceed with abstract conventions only.
+   - **TD Deck skill:** drop your organization's PowerPoint template into `docs/td-decks/samples/template.pptx`. Also copy `.claude/skills/td-deck/specific_instructions.md` to `docs/td-decks/samples/specific_instructions.md` and customize the slide-by-slide mapping to match your template.
+   - **Documentation skill:** optionally drop reference `.docx` files into `docs/releases/samples/` for style calibration. Not required — the skill will use the most recent release doc as its style reference once one exists.
+   - **Pitch Deck skill:** optionally drop reference `.pptx` files into `docs/decks/samples/` for visual cues. Not required — the skill generates a clean modern default without them.
 
 ---
 
@@ -110,13 +130,15 @@ These skills are written to be generic. Common customizations:
 - **Project name and components:** all of this lives in `project_context.md` — never hardcoded in the skill files.
 - **Filename patterns:** skills auto-detect from existing files in `documentations/` (or equivalent) on first run. You can also tell them explicitly the first time.
 - **Trigger phrases:** edit the `description:` field in any `SKILL.md` if you find a skill under-triggering or over-triggering. The description is what Claude reads to decide whether to load the skill body.
-- **TD samples:** drop your organization's TDs into `td/samples/`. See `td/samples/README.md` for conventions.
-- **TD Deck template and samples:** drop your PowerPoint template as `td-deck/samples/template.pptx` and any reference decks alongside it. See `td-deck/samples/README.md` for conventions.
+- **TD samples:** drop your organization's TDs into `docs/td/samples/` (created on first run).
+- **TD Deck template and samples:** drop your PowerPoint template as `docs/td-decks/samples/template.pptx` and any reference decks alongside it. Copy and customize `specific_instructions.md` to `docs/td-decks/samples/specific_instructions.md` for your specific template's slide mapping.
 - **Style deviations from samples** (the TD skill has this for competitor naming): add explicit notes in the skill if your org has rules that intentionally diverge from what the samples show.
 
 ---
 
 ## File overview
+
+**Skill files (in `.claude/skills/` inside your project):**
 
 ```
 .claude/skills/
@@ -128,10 +150,26 @@ These skills are written to be generic. Common customizations:
 │   └── SKILL.md
 ├── td/
 │   ├── SKILL.md
-│   └── samples/
-│       └── README.md              ← drop sample TDs here
+│   └── review-rubric.md           ← Level 3 reference; loaded only during Phase 3 self-review
 └── td-deck/
     ├── SKILL.md
-    └── samples/
-        └── README.md              ← drop template.pptx and reference decks here
+    └── specific_instructions.md   ← starter template for slide mapping; copy to docs/td-decks/samples/ and customize
+```
+
+**Project output and samples (in `docs/` inside your project — created automatically):**
+
+```
+docs/
+├── td/
+│   ├── samples/                   ← drop reference TDs here (gitignore this dir)
+│   └── <generated TD files>
+├── td-decks/
+│   ├── samples/                   ← drop template.pptx, reference decks, specific_instructions.md (gitignore)
+│   └── <generated deck files>
+├── releases/
+│   ├── samples/                   ← optional: reference docs for style calibration (gitignore)
+│   └── <generated User/Technical Guide .docx files>
+└── decks/
+    ├── samples/                   ← optional: reference decks for visual calibration (gitignore)
+    └── <generated pitch deck .pptx files>
 ```

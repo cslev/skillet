@@ -46,8 +46,8 @@ Then proceed immediately to the workflow. No further preamble.
 Before writing any code or generating any file:
 
 1. Read `../project_context.md` — authoritative facts about the project (name, components, terminology). Everything in the docs must be consistent with this file.
-2. Determine where existing release documentation lives in this repo (commonly a directory called `documentations/`, `docs/releases/`, `release-docs/`, or similar) — see "Locating the docs directory" below.
-3. Read the **most recent** existing doc of each type in that directory — for tone, structure, terminology, and filename patterns.
+2. Run the Bootstrap check (see below) — creates output and samples directories if missing.
+3. Read the **most recent** existing doc of each type in `docs/releases/` — for tone, structure, terminology, and filename patterns.
 
 For producing the `.docx` files themselves, use `python-docx` via a Python script. If updating existing docs in place (rather than creating new versioned files), use `python-docx`'s revision-tracking support to apply tracked changes to the existing file.
 
@@ -55,13 +55,54 @@ If `../project_context.md` has placeholder `<fill in: ...>` markers still unfill
 
 ---
 
+## Bootstrap — first-time setup check
+
+Run this before anything else, every invocation:
+
+1. Check whether `docs/releases/` exists at the project root.
+2. **If it does not exist**, create both directories:
+   ```bash
+   mkdir -p docs/releases/samples/
+   ```
+   Then tell the user:
+   > "`docs/releases/` did not exist — created it along with `docs/releases/samples/`. You can optionally drop reference `.docx` files from other projects or your organization's style guide into `docs/releases/samples/` — the skill can calibrate tone and formatting against them. This is optional; if you have no reference docs, I'll generate from scratch. Tell me to proceed when ready."
+
+   Wait for the user's response before continuing.
+
+3. **If `docs/releases/` exists** but `docs/releases/samples/` does not, create it silently and proceed.
+
+---
+
 ## Locating the docs directory and filename pattern
 
-This skill is project-generic. It does not assume a specific directory name or filename convention. Determine both at runtime:
+The canonical output directory is `docs/releases/` at the project root — created during Bootstrap if it didn't exist.
 
-1. **First, look for an obvious docs directory.** Check (in order): `documentations/`, `docs/releases/`, `release-docs/`, `docs/`. Use the first one that exists and contains files matching the pattern of release docs (versioned `.docx` files).
+**Exception:** if the project already stores release docs elsewhere (e.g. `documentations/`, `release-docs/`) and `docs/releases/` was not created by Bootstrap, ask the user to confirm which directory to use rather than creating a duplicate.
 
-2. **If multiple plausible directories exist or none does**, ask the user where release docs should live.
+**Determining the filename pattern:**
+
+1. **Read existing filenames in `docs/releases/`** to infer the project's filename pattern. For example:
+   - `MyProject_UserGuide_v1.2.docx` → pattern is `<ProjectName>_UserGuide_v<MAJOR>.<MINOR>.docx`
+   - `userguide-v1.2.docx` → pattern is `userguide-v<MAJOR>.<MINOR>.docx`
+   - `release-1.2/user-guide.docx` → pattern is `release-<MAJOR>.<MINOR>/user-guide.docx`
+
+2. **If the directory is empty** (first release), ask the user what filename pattern they'd like, or propose a default based on the project name from `../project_context.md`:
+   ```
+   <ProjectName>_UserGuide_v<MAJOR>.<MINOR>.docx
+   <ProjectName>_TechnicalGuide_v<MAJOR>.<MINOR>.docx
+   ```
+
+3. **Other documents in the same directory** (pitch decks, TDs, ad-hoc notes) should be ignored for release-documentation work — filter to files matching the User Guide and Technical Guide patterns specifically.
+
+4. **Reference docs in `docs/releases/samples/`** (if any) are for style calibration only — do not version-diff against them or treat them as previous releases of this project.
+
+---
+
+## Reference samples (optional)
+
+`docs/releases/samples/` may contain `.docx` files from other projects or your organization's documentation style guide. If present, read them for tone, heading structure, and formatting conventions before generating. They supplement (not replace) the most recent versioned release docs in `docs/releases/`.
+
+If `docs/releases/samples/` is empty, skip it silently — reference samples are optional for this skill.
 
 3. **Read existing filenames in that directory** to infer the project's filename pattern. For example:
    - `MyProject_UserGuide_v1.2.docx` → pattern is `<ProjectName>_UserGuide_v<MAJOR>.<MINOR>.docx`
