@@ -59,8 +59,9 @@ If `../project_context.md` has placeholder `<fill in: ...>` markers still unfill
 
 Run this before anything else, every invocation:
 
-1. Check whether `docs/releases/` exists at the project root.
-2. **If it does not exist**, create both directories:
+1. Check for existing release doc directories (in order): `docs/releases/`, `documentations/`, `release-docs/`.
+2. **If an existing directory is found**, use it. If `docs/releases/samples/` does not exist alongside it, create it silently and proceed.
+3. **If none exist**, create the canonical location:
    ```bash
    mkdir -p docs/releases/samples/
    ```
@@ -68,8 +69,6 @@ Run this before anything else, every invocation:
    > "`docs/releases/` did not exist — created it along with `docs/releases/samples/`. You can optionally drop reference `.docx` files from other projects or your organization's style guide into `docs/releases/samples/` — the skill can calibrate tone and formatting against them. This is optional; if you have no reference docs, I'll generate from scratch. Tell me to proceed when ready."
 
    Wait for the user's response before continuing.
-
-3. **If `docs/releases/` exists** but `docs/releases/samples/` does not, create it silently and proceed.
 
 ---
 
@@ -103,11 +102,6 @@ The canonical output directory is `docs/releases/` at the project root — creat
 `docs/releases/samples/` may contain `.docx` files from other projects or your organization's documentation style guide. If present, read them for tone, heading structure, and formatting conventions before generating. They supplement (not replace) the most recent versioned release docs in `docs/releases/`.
 
 If `docs/releases/samples/` is empty, skip it silently — reference samples are optional for this skill.
-
-3. **Read existing filenames in that directory** to infer the project's filename pattern. For example:
-   - `MyProject_UserGuide_v1.2.docx` → pattern is `<ProjectName>_UserGuide_v<MAJOR>.<MINOR>.docx`
-   - `userguide-v1.2.docx` → pattern is `userguide-v<MAJOR>.<MINOR>.docx`
-   - `release-1.2/user-guide.docx` → pattern is `release-<MAJOR>.<MINOR>/user-guide.docx`
 
 4. **If the directory is empty** (first release), ask the user what filename pattern they'd like, or propose a default based on the project name from `../project_context.md`:
    ```
