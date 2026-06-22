@@ -47,7 +47,7 @@ Before writing any code or generating any file:
 
 1. Read `../project_context.md` — authoritative facts about the project (name, components, terminology). Everything in the docs must be consistent with this file.
 2. Run the Bootstrap check (see below) — creates output and samples directories if missing.
-3. Read the **most recent** existing doc of each type in `<output-dir>` — for tone, structure, terminology, and filename patterns.
+3. Read the **most recent** existing doc of each type in `docs/documentation/` — for tone, structure, terminology, and filename patterns.
 
 For producing the `.docx` files themselves, use `python-docx` via a Python script. If updating existing docs in place (rather than creating new versioned files), use `python-docx`'s revision-tracking support to apply tracked changes to the existing file.
 
@@ -57,34 +57,33 @@ If `../project_context.md` has placeholder `<fill in: ...>` markers still unfill
 
 ## Bootstrap — first-time setup check
 
-Run this before anything else, every invocation. The goal is to resolve `<output-dir>` — the directory where docs will be written — and ensure its `samples/` subdirectory exists.
+Run this before anything else, every invocation:
 
-1. Check for existing doc directories (in order): `docs/documentation/`, `documentations/`, `release-docs/`. Use the first one that exists as `<output-dir>`.
-2. **If an existing directory is found**: ensure `<output-dir>/samples/` exists; create it silently if not. Proceed.
-3. **If none exist**, create the canonical location and set it as `<output-dir>`:
+1. Check whether `docs/documentation/` exists at the project root.
+2. **If it does not exist**, create it:
    ```bash
    mkdir -p docs/documentation/samples/
    ```
    Then tell the user:
-   > "`docs/documentation/` did not exist — created it along with `docs/documentation/samples/`. You can optionally drop reference `.docx` files from other projects or your organization's style guide into `docs/documentation/samples/` — the skill can calibrate tone and formatting against them. This is optional; if you have no reference docs, I'll generate from scratch. Tell me to proceed when ready."
+   > "This skill requires `docs/documentation/` in your project root — created it now along with `docs/documentation/samples/`. You can optionally drop reference `.docx` files from other projects or your organization's style guide into `docs/documentation/samples/` for style calibration. Tell me to proceed when ready."
 
    Wait for the user's response before continuing.
 
-`<output-dir>` is used throughout the rest of this skill wherever a directory path is needed.
+3. **If it exists** but `docs/documentation/samples/` does not, create it silently and proceed.
 
 ---
 
-## Locating the docs directory and filename pattern
+## Output directory
 
-`<output-dir>` was resolved during Bootstrap. Use it throughout.
+Always use `docs/documentation/` for output. Always use `docs/documentation/samples/` for reference samples. These paths are fixed — do not look for or create alternative locations.
 
 **Determining the filename pattern:**
 
-1. **Read existing filenames in `<output-dir>`** to infer the project's filename pattern. For example:
+1. **Read existing filenames in `docs/documentation/`** to infer the project's filename pattern. For example:
    - `MyProject_UserGuide_v1.2.docx` → pattern is `<ProjectName>_UserGuide_v<MAJOR>.<MINOR>.docx`
    - `userguide-v1.2.docx` → pattern is `userguide-v<MAJOR>.<MINOR>.docx`
 
-2. **If the directory is empty** (first release), ask the user what filename pattern they'd like, or propose a default based on the project name from `../project_context.md`:
+2. **If the directory is empty** (first use), ask the user what filename pattern they'd like, or propose a default based on the project name from `../project_context.md`:
    ```
    <ProjectName>_UserGuide_v<MAJOR>.<MINOR>.docx
    <ProjectName>_TechnicalGuide_v<MAJOR>.<MINOR>.docx
@@ -92,15 +91,13 @@ Run this before anything else, every invocation. The goal is to resolve `<output
 
 3. **Other documents in the same directory** (pitch decks, TDs, ad-hoc notes) should be ignored — filter to files matching the User Guide and Technical Guide patterns specifically.
 
-4. **Reference docs in `<output-dir>/samples/`** (if any) are for style calibration only — do not version-diff against them or treat them as previous releases of this project.
-
 ---
 
 ## Reference samples (optional)
 
-`<output-dir>/samples/` may contain `.docx` files from other projects or your organization's documentation style guide. If present, read them for tone, heading structure, and formatting conventions before generating. They supplement (not replace) the most recent versioned release docs in `<output-dir>`.
+`docs/documentation/samples/` may contain `.docx` files from other projects or your organization's documentation style guide. If present, read them for tone, heading structure, and formatting conventions before generating. They supplement (not replace) the most recent versioned docs in `docs/documentation/`. Do not version-diff against them.
 
-If `<output-dir>/samples/` is empty, skip it silently — reference samples are optional for this skill.
+If `docs/documentation/samples/` is empty, skip it silently — reference samples are optional for this skill.
 
 ---
 

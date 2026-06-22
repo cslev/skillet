@@ -35,20 +35,20 @@ A single `.pptx` presentation deck per request, derived entirely from the conten
 Run this before anything else, every invocation:
 
 1. Check whether `docs/td-decks/` exists at the project root.
-2. **If it does not exist**, create both directories:
+2. **If it does not exist**, create it:
    ```bash
    mkdir -p docs/td-decks/samples/
    ```
    Then tell the user:
-   > "`docs/td-decks/` did not exist — created it along with `docs/td-decks/samples/`. Before I proceed, consider adding:
+   > "This skill requires `docs/td-decks/` in your project root — created it now along with `docs/td-decks/samples/`. Before I proceed, consider adding:
    > - `docs/td-decks/samples/template.pptx` — your organization's PowerPoint template (the deck will be built from it)
    > - Any reference TD presentation decks (`.pptx`) alongside it — for additional visual calibration
    >
-   > These are optional. Tell me to proceed now and I'll fall back to a default structure and ask how you'd like to proceed without a template."
+   > These are optional. Tell me to proceed now and I'll fall back to a default structure."
 
    Wait for the user's response before continuing to Phase 1.
 
-3. **If `docs/td-decks/` exists** but `docs/td-decks/samples/` does not, create it silently and proceed.
+3. **If it exists** but `docs/td-decks/samples/` does not, create it silently and proceed.
 
 ---
 
@@ -69,11 +69,9 @@ The `docs/td-decks/samples/` directory serves two purposes:
 
 ---
 
-## Locating the output directory
+## Output directory
 
-The canonical output directory is `docs/td-decks/` at the project root — created during Bootstrap if it didn't exist. Use it.
-
-**Exception:** if the project already stores TD decks elsewhere (e.g. `td-decks/`, `presentations/`) and `docs/td-decks/` was not created by Bootstrap, ask the user to confirm which directory to use rather than creating a duplicate.
+Always use `docs/td-decks/` for output and `docs/td-decks/samples/` for reference samples. These paths are fixed — do not look for or create alternative locations.
 
 Output filename pattern: `<PROJECT>_TD_<same-slug-as-source-TD>_deck_<YYYY-MM-DD>.pptx`
 

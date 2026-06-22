@@ -65,26 +65,24 @@ If no existing `.pptx` is present in the project, generate a clean, modern style
 Run this before anything else, every invocation:
 
 1. Check whether `docs/decks/` exists at the project root.
-2. **If it does not exist**, create both directories:
+2. **If it does not exist**, create it:
    ```bash
    mkdir -p docs/decks/samples/
    ```
    Then tell the user:
-   > "`docs/decks/` did not exist — created it along with `docs/decks/samples/`. You can optionally drop reference `.pptx` files (previous decks, style templates) into `docs/decks/samples/` — the skill borrows visual cues (colors, fonts, layouts) from them. This is optional; if you have no reference decks, I'll generate a clean modern style from scratch. Tell me to proceed when ready."
+   > "This skill requires `docs/decks/` in your project root — created it now along with `docs/decks/samples/`. You can optionally drop reference `.pptx` files (previous decks, style templates) into `docs/decks/samples/` — the skill borrows visual cues (colors, fonts, layouts) from them. This is optional; if you have no reference decks, I'll generate a clean modern style from scratch. Tell me to proceed when ready."
 
    Wait for the user's response before continuing to Step 1.
 
-3. **If `docs/decks/` exists** but `docs/decks/samples/` does not, create it silently and proceed.
+3. **If it exists** but `docs/decks/samples/` does not, create it silently and proceed.
 
 ---
 
-## Locating the output directory
+## Output directory
 
-The canonical output directory is `docs/decks/` at the project root — created during Bootstrap if it didn't exist.
+Always use `docs/decks/` for output and `docs/decks/samples/` for reference samples. These paths are fixed — do not look for or create alternative locations.
 
-**Exception:** if the project already stores decks elsewhere (e.g. `documentations/`, `decks/`, `pitch/`) and `docs/decks/` was not created by Bootstrap, ask the user to confirm which directory to use rather than creating a duplicate alongside an existing one.
-
-**Visual style reference:** read the most recent `.pptx` in `docs/decks/` (or `docs/decks/samples/` if present) for color/font/layout cues. If no existing decks are found in either place, generate a clean modern default — neutral palette, generous whitespace.
+**Visual style reference:** read the most recent `.pptx` in `docs/decks/` or `docs/decks/samples/` for color/font/layout cues. If none exist, generate a clean modern default — neutral palette, generous whitespace.
 
 Filenames derive from the project name in `../project_context.md` plus mode/frame and date — see Step 1.
 

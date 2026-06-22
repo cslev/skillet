@@ -56,20 +56,16 @@ If `../project_context.md` has placeholder `<fill in: ...>` markers still unfill
 Run this before anything else, every invocation:
 
 1. Check whether `docs/td/` exists at the project root.
-2. **If it does not exist**, create both directories:
+2. **If it does not exist**, create it:
    ```bash
    mkdir -p docs/td/samples/
    ```
    Then tell the user:
-   > "`docs/td/` did not exist — created it along with `docs/td/samples/`. Before I continue, drop your organization's sample TDs (`.pdf` or `.docx`) into `docs/td/samples/`. The skill calibrates its tone, structure, and citation style against them. Add samples and re-invoke me, or tell me to proceed now and I'll work without calibration (output may not match your house style)."
+   > "This skill requires `docs/td/` in your project root — created it now along with `docs/td/samples/`. Before I proceed, drop your organization's sample TDs (`.pdf` or `.docx`) into `docs/td/samples/` — the skill calibrates its tone, structure, and citation style against them. Re-invoke me once you've added samples, or tell me to proceed now and I'll work without samples (output may not match your house style)."
 
    Wait for the user's response before continuing to Phase 1.
 
-3. **If `docs/td/` exists** but `docs/td/samples/` does not, create it silently:
-   ```bash
-   mkdir -p docs/td/samples/
-   ```
-   Then proceed without stopping — the Samples handling section covers the empty-samples case.
+3. **If it exists** but `docs/td/samples/` does not, create it silently and proceed.
 
 ---
 
@@ -93,11 +89,9 @@ If the user picks (b), proceed but include a brief note in the hand-off summary 
 
 ---
 
-## Locating the TD output directory
+## Output directory
 
-The canonical output directory is `docs/td/` at the project root — created during Bootstrap if it didn't exist. Use it.
-
-**Exception:** if the project already stores TDs elsewhere (e.g. `td/`, `tds/`, `disclosures/`) and `docs/td/` was not created by Bootstrap (i.e. the project predates this convention), ask the user to confirm which directory to use rather than creating a duplicate alongside an existing one.
+Always use `docs/td/` for output and `docs/td/samples/` for reference samples. These paths are fixed — do not look for or create alternative locations.
 
 ---
 
