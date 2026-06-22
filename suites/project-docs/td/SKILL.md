@@ -177,6 +177,15 @@ Style rules (calibrated against `docs/td/samples/` when available; defaults belo
 - **Figures:** describe what the figure shows in the surrounding prose (figures aren't self-explanatory in a TD). Insert markdown placeholders for figures the user will add later — use the convention `![Figure N: <description>](placeholder)` followed by a one-paragraph speaker-notes-style brief on what the figure should actually depict.
 - **Citations:** numbered `[1]`, `[2]` style inline (or match the samples' convention). References section at the end with full URLs. Every reference must be a real, verified source. If a search didn't return a usable source for a claim, soften the claim rather than fabricating a citation.
 
+**Anti-AI-writing checklist** — apply to all prose as you draft, section by section:
+
+- No em dashes (—). Use a comma, semicolon, or rewrite the sentence.
+- No significance inflation: avoid *crucial*, *vital*, *critical*, *transformative*, *groundbreaking*, *revolutionary*, *pivotal*. State the fact; let it speak for itself.
+- No AI vocabulary: avoid *leverage*, *robust*, *seamlessly*, *streamline*, *delve*, *comprehensive*, *facilitates*, *cutting-edge*, *state-of-the-art* (unless citing a prior art paper title).
+- No rule-of-three sentence endings: "X, Y, and Z" as a rhetorical closer signals generated text. If three items are genuinely enumerable, a list or table is clearer.
+- No hedged numbers: "significant improvement," "substantial reduction," "fast inference" — replace with the actual number or omit the claim.
+- Active voice preferred. Passive is acceptable when the subject is genuinely unknown or irrelevant, not as a default register.
+
 **House-convention deviations from samples:**
 
 The samples in `docs/td/samples/` may reflect older conventions that the user's organization has moved away from. Check `docs/td/samples/README.md` for any documented deviations — these override what you'd infer from the samples directly.
