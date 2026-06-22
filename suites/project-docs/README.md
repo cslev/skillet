@@ -39,7 +39,7 @@ your-project/
 │   │   └── samples/                   ← drop your org's reference TDs here
 │   ├── td-decks/
 │   │   └── samples/                   ← drop template.pptx and reference decks here
-│   ├── releases/
+│   ├── documentation/
 │   │   └── samples/                   ← optional: reference docs for style calibration
 │   └── decks/
 │       └── samples/                   ← optional: reference .pptx files for visual cues
@@ -60,7 +60,7 @@ your-project/
 > ```
 > docs/td/samples/
 > docs/td-decks/samples/
-> docs/releases/samples/
+> docs/documentation/samples/
 > docs/decks/samples/
 > ```
 
@@ -92,12 +92,12 @@ your-project/
 
 3. **Skills auto-trigger.** You don't need to invoke them explicitly. Phrases like "create the user guide for v2.0" or "make me a pitch deck" or "write up a TD on this" will activate the right skill automatically. The YAML frontmatter `description` field in each `SKILL.md` controls what phrases trigger it.
 
-4. **Bootstrap happens automatically on first invocation.** Each skill checks for its output directory (`docs/td/`, `docs/td-decks/`, `docs/releases/`, `docs/decks/`) at the start of every run. If the directory doesn't exist, the skill creates it along with a `samples/` subdirectory and pauses to tell you what to put there. This happens once per skill, the first time you use it in a project.
+4. **Bootstrap happens automatically on first invocation.** Each skill checks for its output directory (`docs/td/`, `docs/td-decks/`, `docs/documentation/`, `docs/decks/`) at the start of every run. If the directory doesn't exist, the skill creates it along with a `samples/` subdirectory and pauses to tell you what to put there. This happens once per skill, the first time you use it in a project.
 
 5. **Drop samples before first use — or tell the skill to proceed without them.**
    - **TD skill:** drop at least one sample TD (`.pdf` or `.docx`) into `docs/td/samples/`. The skill calibrates tone, structure, and citation style against them. Without samples, it will ask whether to proceed with abstract conventions only.
    - **TD Deck skill:** drop your organization's PowerPoint template into `docs/td-decks/samples/template.pptx`. Also copy `.claude/skills/td-deck/specific_instructions.md` to `docs/td-decks/samples/specific_instructions.md` and customize the slide-by-slide mapping to match your template.
-   - **Documentation skill:** optionally drop reference `.docx` files into `docs/releases/samples/` for style calibration. Not required — the skill will use the most recent release doc as its style reference once one exists.
+   - **Documentation skill:** optionally drop reference `.docx` files into `docs/documentation/samples/` for style calibration. Not required — the skill will use the most recent release doc as its style reference once one exists.
    - **Pitch Deck skill:** optionally drop reference `.pptx` files into `docs/decks/samples/` for visual cues. Not required — the skill generates a clean modern default without them.
 
 ---
@@ -166,7 +166,7 @@ docs/
 ├── td-decks/
 │   ├── samples/                   ← drop template.pptx, reference decks, specific_instructions.md (gitignore)
 │   └── <generated deck files>
-├── releases/
+├── documentation/
 │   ├── samples/                   ← optional: reference docs for style calibration (gitignore)
 │   └── <generated User/Technical Guide .docx files>
 └── decks/
