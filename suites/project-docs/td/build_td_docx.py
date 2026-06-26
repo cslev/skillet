@@ -131,12 +131,29 @@ def build(md_path, out_path, title, authors, date, logo, institute):
     body = doc.element.body
     first = body[0]  # the pandoc TOC sdt
 
-    # --- page break so content starts after the TOC's own page ------------
+    # --- page breaks: TOC, Abstract, main content, and References each
+    #     start on a fresh page ---------------------------------------------
+    def page_break_before(paragraph):
+        paragraph.insert_paragraph_before("").add_run().add_break(WD_BREAK.PAGE)
+
+    h1s = [p for p in doc.paragraphs if p.style.name.startswith("Heading 1")]
+    for idx, p in enumerate(h1s):
+        heading = p.text.strip().lower()
+        if idx == 0:                    # Abstract -> TOC keeps its own page
+            page_break_before(p)
+        elif idx == 1:                  # main content starts after the Abstract
+            page_break_before(p)
+        elif heading == "references":   # References on its own page
+            page_break_before(p)
+
+    # --- References entries are left-aligned; the rest stays justified -----
+    in_refs = False
     for p in doc.paragraphs:
         if p.style.name.startswith("Heading 1"):
-            run = p.insert_paragraph_before("").add_run()
-            run.add_break(WD_BREAK.PAGE)
-            break
+            in_refs = p.text.strip().lower() == "references"
+            continue
+        if in_refs:
+            p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
     # --- cover page (inserted before the TOC) ------------------------------
     def add_before(make):

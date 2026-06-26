@@ -22,7 +22,14 @@ is gone — the cover page replaces it.
 
 **Table of Contents (section 2, page 1):** on its own dedicated page.
 
-**Body (section 2, page 2 onward):** Abstract, Introduction, and the rest — justified.
+**Body (section 2):** justified, with forced page breaks so the major
+boundaries land cleanly:
+- the **Abstract** starts on a fresh page (the TOC keeps its own page);
+- the **main content** starts on a fresh page after the Abstract (page break
+  before the section following the Abstract, i.e. the Introduction);
+- the **References** section starts on a fresh page (page break before it), and
+  its entries are **left-aligned** rather than justified. Everything else in the
+  body stays justified.
 
 **Every non-cover page:**
 - Header: TD title top-left, logo top-right (scaled small), black border on the bottom edge only.
