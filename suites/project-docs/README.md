@@ -24,17 +24,18 @@ cp -r suites/project-docs/. /path/to/your-project/.claude/skills/
 …or with rsync (useful when re-syncing after updates, since it leaves your project-specific files alone):
 
 ```bash
-rsync -av --exclude='project_context.md' \
-  suites/project-docs/ /path/to/your-project/.claude/skills/
+rsync -av suites/project-docs/ /path/to/your-project/.claude/skills/
 ```
 
-The `--exclude` flag preserves your filled-in `project_context.md` — that's the only file you customize that lives in the suite root. Everything else (SKILL.md files, samples READMEs) re-syncs freely. Your private files in `samples/` directories are safe because they're gitignored in skillet and will never appear in the rsync source.
+Then, open Claude Code, and let him know to do bootstrap. Then, it will create the `docs/` and its subdirectories within your project (after your approval). This concludes the basic "installation" step. 
 
 After install, your project's layout will look like:
 
 ```
 your-project/
 ├── docs/                               ← created automatically on first skill invocation
+│   ├── assets/
+│   │   └── logos/                     ← shared: drop your org logo(s) here (TD cover + header)
 │   ├── td/
 │   │   └── samples/                   ← drop your org's reference TDs here
 │   ├── td-decks/
@@ -95,7 +96,7 @@ your-project/
 4. **Bootstrap happens automatically on first invocation.** Each skill checks for its output directory (`docs/td/`, `docs/td-decks/`, `docs/documentation/`, `docs/decks/`) at the start of every run. If the directory doesn't exist, the skill creates it along with a `samples/` subdirectory and pauses to tell you what to put there. This happens once per skill, the first time you use it in a project.
 
 5. **Drop samples before first use — or tell the skill to proceed without them.**
-   - **TD skill:** drop at least one sample TD (`.pdf` or `.docx`) into `docs/td/samples/`. The skill calibrates tone, structure, and citation style against them. Without samples, it will ask whether to proceed with abstract conventions only.
+   - **TD skill:** drop at least one sample TD (`.pdf` or `.docx`) into `docs/td/samples/`. The skill calibrates tone, structure, and citation style against them. Without samples, it will ask whether to proceed with abstract conventions only. Optionally drop your organization's logo into `docs/assets/logos/` (a shared asset directory created at bootstrap) — it goes on the cover page and in the page header of the final `.docx`. The `.docx` step needs both `pandoc` and `python-docx` installed, and offers to install them if missing.
    - **TD Deck skill:** drop your organization's PowerPoint template into `docs/td-decks/samples/template.pptx`. Also copy `.claude/skills/td-deck/specific_instructions.md` to `docs/td-decks/samples/specific_instructions.md` and customize the slide-by-slide mapping to match your template.
    - **Documentation skill:** optionally drop reference `.docx` files into `docs/documentation/samples/` for style calibration. Not required — the skill will use the most recent release doc as its style reference once one exists.
    - **Pitch Deck skill:** optionally drop reference `.pptx` files into `docs/decks/samples/` for visual cues. Not required — the skill generates a clean modern default without them.
@@ -131,6 +132,7 @@ These skills are written to be generic. Common customizations:
 - **Filename patterns:** skills auto-detect from existing files in `documentations/` (or equivalent) on first run. You can also tell them explicitly the first time.
 - **Trigger phrases:** edit the `description:` field in any `SKILL.md` if you find a skill under-triggering or over-triggering. The description is what Claude reads to decide whether to load the skill body.
 - **TD samples:** drop your organization's TDs into `docs/td/samples/` (created on first run).
+- **TD logo:** drop a `.png`/`.jpg` logo into `docs/assets/logos/` (shared across skills, created at bootstrap) for the `.docx` cover page and page header. One file is used automatically; multiple prompts you to pick; none prompts you to continue without one or add a file.
 - **TD Deck template and samples:** drop your PowerPoint template as `docs/td-decks/samples/template.pptx` and any reference decks alongside it. Copy and customize `specific_instructions.md` to `docs/td-decks/samples/specific_instructions.md` for your specific template's slide mapping.
 - **Style deviations from samples** (the TD skill has this for competitor naming): add explicit notes in the skill if your org has rules that intentionally diverge from what the samples show.
 
@@ -150,7 +152,9 @@ These skills are written to be generic. Common customizations:
 │   └── SKILL.md
 ├── td/
 │   ├── SKILL.md
-│   └── review-rubric.md           ← Level 3 reference; loaded only during Phase 3 self-review
+│   ├── review-rubric.md           ← Level 3 reference; loaded only during the self-review phase
+│   ├── docx-generation.md         ← Level 3 reference; loaded only during the .docx phase
+│   └── build_td_docx.py           ← generator: cover page, TOC, header/footer, page numbers, justified body
 └── td-deck/
     ├── SKILL.md
     └── specific_instructions.md   ← starter template for slide mapping; copy to docs/td-decks/samples/ and customize
@@ -160,6 +164,8 @@ These skills are written to be generic. Common customizations:
 
 ```
 docs/
+├── assets/
+│   └── logos/                     ← shared: drop your org logo(s) here (TD cover + header)
 ├── td/
 │   ├── samples/                   ← drop reference TDs here (gitignore this dir)
 │   └── <generated TD files>
