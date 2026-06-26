@@ -10,32 +10,38 @@ description: Generate a Technology Disclosure (TD) document for a project. A TD 
 
 **Always announce that this skill has been triggered.** At the very start of your first reply, output exactly one line:
 
-> **TD skill activated.** I'll guide you through a pre-flight, draft the disclosure, run a self-review, and hand off both files.
+> **TD skill activated.** I'll run a pre-flight, draft the disclosure in markdown, then step you through review, humanizing, and `.docx` generation — pausing for your go-ahead at each step.
 
 Then proceed immediately to Phase 1. No further preamble.
 
 ---
 
-This skill generates Technology Disclosures: short research-paper-style documents describing a software contribution from a project. The output is markdown (for fast iteration), with conversion to `.docx` as a separate explicit step for final submission.
+This skill generates Technology Disclosures: short research-paper-style documents describing a software contribution from a project. The working format is markdown (for fast iteration). Generation of the final `.docx` is the **last** step and happens only after the user has approved the draft — never automatically right after drafting.
+
+The flow is gated: draft → (ask) self-review → revise until satisfied → (ask) humanize → (ask) generate `.docx`. Each arrow is a checkpoint where you stop and wait for the user. Do not run ahead to the next step on your own.
 
 A TD is **not**: release documentation, a pitch deck, a marketing piece, a code walkthrough. It is closer to an academic research paper but produced for internal IP/disclosure purposes — typically under 20 pages, with the structure and rigor of a short conference paper.
 
 ## Deliverables
 
-Each invocation produces **two files** in the TD output directory:
+Files written to the TD output directory, in the order they appear:
 
-1. **Draft TD** — `<PROJECT>_TD_<short-title-slug>_<YYYY-MM-DD>.md`
-2. **Self-review** — `<PROJECT>_TD_<short-title-slug>_<YYYY-MM-DD>_review.md`
+1. **Draft TD** — `<PROJECT>_TD_<short-title-slug>_<YYYY-MM-DD>.md` (always)
+2. **Self-review** — `<PROJECT>_TD_<short-title-slug>_<YYYY-MM-DD>_review.md` (only if the user opts into review)
+3. **Final TD** — `<PROJECT>_TD_<short-title-slug>_<YYYY-MM-DD>.docx` (only when the user approves generation, as the last step)
 
 Where `<PROJECT>` is the project name from `../project_context.md`.
 
-The user reviews both and decides next steps. The skill does **not** auto-revise based on the review.
+The markdown draft is the working artifact; it is revised in place across review and humanizing. The `.docx` is generated once, at the end, from the approved draft.
 
 ---
 
 ## Prerequisites
 
-`pandoc` must be installed in the environment (`brew install pandoc` / `apt install pandoc`). The markdown→docx conversion step in Phase 4 depends on it.
+Both are needed for the `.docx` generation step (Phase 5). They do not need to be installed up front — that phase checks for them and offers to install what's missing (see `./docx-generation.md`):
+
+- **`pandoc`** (`brew install pandoc` / `apt install pandoc`) — converts the markdown body and builds the Word table-of-contents field.
+- **`python-docx`** (`pip install python-docx`) — adds the cover page, sections, header/footer, page numbering, and justification.
 
 ---
 
@@ -56,16 +62,20 @@ If `../project_context.md` has placeholder `<fill in: ...>` markers still unfill
 Run this before anything else, every invocation:
 
 1. Check whether `docs/td/` exists at the project root.
-2. **If it does not exist**, create it:
+2. **If it does not exist**, create it along with the shared assets directory:
    ```bash
-   mkdir -p docs/td/samples/
+   mkdir -p docs/td/samples/ docs/assets/logos/
    ```
-   Then tell the user:
-   > "This skill requires `docs/td/` in your project root — created it now along with `docs/td/samples/`. Before I proceed, drop your organization's sample TDs (`.pdf` or `.docx`) into `docs/td/samples/` — the skill calibrates its tone, structure, and citation style against them. Re-invoke me once you've added samples, or tell me to proceed now and I'll work without samples (output may not match your house style)."
+   `docs/assets/logos/` is a **shared** project asset directory (not specific to this skill — other skills, e.g. documentation, can use the same logos). Then tell the user:
+   > "This skill requires `docs/td/` in your project root — created it now along with `docs/td/samples/` and a shared `docs/assets/logos/`. Two things to drop in:
+   > - **Sample TDs** (`.pdf` / `.docx`) into `docs/td/samples/` — the skill calibrates its tone, structure, and citation style against them.
+   > - **Your organization's logo** (`.png` / `.jpg`) into `docs/assets/logos/` — it goes on the `.docx` cover page and in the page header.
+   >
+   > Re-invoke me once you've added them, or tell me to proceed now (I'll work without samples — output may not match your house style — and ask about the logo when it's time to generate the `.docx`)."
 
    Wait for the user's response before continuing to Phase 1.
 
-3. **If it exists** but `docs/td/samples/` does not, create it silently and proceed.
+3. **If `docs/td/` exists** but `docs/td/samples/` or `docs/assets/logos/` do not, create the missing ones silently and proceed.
 
 ---
 
@@ -97,7 +107,16 @@ Always use `docs/td/` for output and `docs/td/samples/` for reference samples. T
 
 ## Workflow
 
-The skill has four phases: **Pre-flight**, **Draft**, **Self-review**, **Hand off**. Do them in order.
+The skill has six phases, each gated on the user's go-ahead:
+
+1. **Pre-flight** — gather scoping context.
+2. **Draft** — write the markdown draft. Then *ask* whether to run the self-review.
+3. **Self-review** — if the user agrees, review and then revise the draft until they're satisfied.
+4. **Humanize** — *ask* whether to apply the `/humanizer` skill to the approved draft.
+5. **Generate `.docx`** — *ask* whether the user is ready; then handle the logo and build the document.
+6. **Hand off** — summarize and point to the files.
+
+Do them in order. Do not skip a checkpoint or run the next phase before the user says to.
 
 ---
 
@@ -122,6 +141,8 @@ TDs are scoped, audience-aware documents. Ask the user the following before draf
 8. **Anything off-limits** — unreleased capabilities, NDA-bound details, internal-only methods.
 
 9. **Title for the TD.** Used in the filename slug and as the document title. If the user doesn't have one, suggest one based on the contribution.
+
+10. **Authors / inventors.** The full list, in order, as they should appear on the cover page (one per row). These also feed the author metadata in the document. Capture them now so the `.docx` step in Phase 6 doesn't have to stop and ask.
 
 Do not skip these. The pre-flight is the difference between a generic TD and one that lands.
 
@@ -192,36 +213,79 @@ Write to: `<TD-output-dir>/<PROJECT>_TD_<short-title-slug>_<YYYY-MM-DD>.md`
 
 Use the title-derived slug from pre-flight Q9. Slug is lowercase, hyphenated, no special chars.
 
-Confirm to the user that the draft is written, and that the self-review pass is starting next. Do **not** present the draft for user review yet — the self-review goes first.
+**Do not generate a `.docx` here.** The draft is markdown only at this stage.
+
+Confirm to the user that the markdown draft is written (give the full path), then **stop and ask** whether to run the self-review now:
+
+> "Draft is ready at `<path>`. Would you like me to run the self-review pass on it now? (It simulates a critical internal review-board member and writes a separate review file.)"
+
+Wait for the answer.
+- **Yes** → go to Phase 3.
+- **No / not now** → skip to the relevant later checkpoint the user names (e.g. straight to humanizing, or straight to `.docx`), or stop if they just want the draft. Don't force the review.
 
 ---
 
-### Phase 3 — Self-review (clean slate)
+### Phase 3 — Self-review (clean slate) and revision
 
-This is the most important phase. Done casually, self-review produces validation theater. Done with the right framing, it catches real issues.
+Run this only if the user opted in at the end of Phase 2.
 
-**Read `./review-rubric.md` now.** It contains the role-reframing prompt, the full 19-checkpoint rubric, the review file format, and verdict calibration. Follow it exactly for steps 3a, 3b, and 3c.
+This is the most important quality phase. Done casually, self-review produces validation theater. Done with the right framing, it catches real issues.
+
+**Read `./review-rubric.md` now.** It contains the role-reframing prompt, the full 19-checkpoint rubric, the review file format, and verdict calibration. Follow it exactly to produce the review file.
+
+After writing the review, present its verdict and the blocking issues to the user, then **ask how to proceed**:
+
+> "Self-review is done (verdict: `<verdict>`). Want me to apply the suggested revisions to the draft, apply only some of them, or leave it as-is?"
+
+- If the user asks for revisions, apply them to the **markdown draft in place** and tell them what changed. The user may iterate (re-review, more edits) as many rounds as they want.
+- Do not apply revisions silently or without being asked — the user decides what goes in.
+- Stay in this phase until the user says they're satisfied with the draft. Only then move on.
 
 ---
 
-### Phase 4 — Hand off
+### Phase 4 — Humanize (ask first)
 
-Mention the full paths of both output files directly so the user can open them immediately.
+Once the user is satisfied with the (revised) draft, **ask** whether to humanize it:
+
+> "Would you like me to run the `/humanizer` skill over the draft to make it read less like AI and more like a person wrote it? It rewrites in place; you'll see what changed."
+
+- **Yes** → invoke the `humanizer` skill on the markdown draft, apply its final rewrite to the draft file in place, and summarize the changes. The TD draft is technical/academic, so keep the neutral register — do not inject opinion or first-person color.
+- **No** → leave the draft as-is and continue.
+
+After humanizing, the user may want one more look or further tweaks. When they're done, move on.
+
+---
+
+### Phase 5 — Generate the `.docx` (ask first)
+
+This is the final step and the only one that produces a `.docx`. **Ask before doing anything:**
+
+> "Ready for me to generate the final `.docx` from the approved draft?"
+
+Only on a clear yes, **read `./docx-generation.md` now** and follow it. It covers: checking for `pandoc` / `python-docx` and offering to install what's missing, confirming the title / authors / institute / date for the cover, resolving the logo from `docs/assets/logos/` (including what to do when there are zero or multiple logos), running `build_td_docx.py`, and telling the user to update the Word fields.
+
+Do not generate the `.docx` earlier in the flow, and do not reintroduce the old title block — the cover page replaces it.
+
+---
+
+### Phase 6 — Hand off
+
+Mention the full paths of the files that exist (draft, review if produced, `.docx` if generated) so the user can open them immediately.
 
 Then provide a short written summary:
-- The verdict from the self-review (so the user knows whether to expect heavy revisions)
-- A one-line preview of the most important blocking issue, if any
+- The verdict from the self-review, if one was run, and whether revisions were applied
+- Whether the draft was humanized
 - Anything in `../project_context.md` that was missing or incomplete, so the context file can be updated
 - If `docs/td/samples/` was empty: a reminder that the TD was generated without house-style calibration
-- The path for converting markdown → docx when the user is ready for submission (e.g., `pandoc <draft>.md -o <draft>.docx`)
-
-Do **not** apply the review's suggested rewrites automatically. The user decides what to do with the review. If they want rewrites applied, they ask in the next turn.
+- If a `.docx` was generated: remind the user to update fields in Word (`Ctrl/Cmd+A` then `F9`) so the TOC and page numbers populate, and note whether a logo was used or omitted
 
 ---
 
 ## Things to get right
 
 - **Pre-flight is non-negotiable.** Do not start drafting without the user's answers. A "generic" TD is worse than no TD.
+- **Honor the checkpoints.** Each step (review, humanize, `.docx`) is gated on the user's go-ahead. Stop and ask; never run ahead to the next phase on your own.
+- **`.docx` is last and explicit.** Never generate it right after drafting. It comes only after the user approves the draft and confirms they're ready.
 - **Citations must be real.** Every reference verified, not just title-cited. If a search didn't find a usable source, soften the claim rather than fabricate.
 - **Self-review with clean slate.** The reviewer pass is the part most likely to be done sloppily. Take it seriously — the role-reframing prompt at the start of Phase 3 is there for a reason.
 - **Limitations are honest, not buried.** TDs that hide limitations read as marketing.
@@ -236,8 +300,10 @@ Do **not** apply the review's suggested rewrites automatically. The user decides
 - Padding the lit review with tangentially-related citations to "look thorough"
 - Inventing reference URLs or citing papers Claude hasn't verified
 - Putting prose-shaped content in tables, or multi-attribute content in prose
-- Skipping the self-review because the draft "feels good"
+- Running the self-review, humanizer, or `.docx` step without first asking the user
+- Generating the `.docx` right after drafting instead of as the final, approved step
+- Reintroducing an AI-style title block at the top of the `.docx` — the cover page replaces it
 - Letting the reviewer praise the draft without applying the full 19-checkpoint rubric
-- Applying the review's suggested rewrites automatically — user decides
+- Applying the review's suggested rewrites without the user asking — user decides which land
 - Asking the user to provide content that should come from `../project_context.md`, the code, or web search for prior art
 - Hedging numbers with vague adjectives ("significant," "substantial," "fast") when concrete values are available
