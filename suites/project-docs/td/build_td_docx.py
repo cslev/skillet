@@ -97,18 +97,45 @@ def copy_page_geometry(src_sectPr, dst_sectPr):
 
 
 def build(md_path, out_path, title, authors, date, logo, institute):
-    md_text = Path(md_path).read_text(encoding="utf-8")
+    # Resolve everything to absolute paths up front. pandoc resolves relative
+    # image links against its working directory (not the input file's), so we
+    # run it from the draft's own directory and figure paths written relative
+    # to the draft (e.g. ../assets/fig.png) resolve correctly regardless of
+    # where this script is invoked from. The logo is embedded by python-docx
+    # (this process's CWD), so it must be absolute too.
+    md_path = Path(md_path).resolve()
+    md_dir = md_path.parent
+    out_path = str(Path(out_path).resolve())
+    if logo:
+        logo = str(Path(logo).resolve())
+    md_text = md_path.read_text(encoding="utf-8")
     body_md = strip_front_matter(md_text)
 
     with tempfile.TemporaryDirectory() as tmp:
         body_md_path = Path(tmp) / "body.md"
         body_md_path.write_text(body_md, encoding="utf-8")
         body_docx = Path(tmp) / "body.docx"
-        subprocess.run(
+        proc = subprocess.run(
             ["pandoc", str(body_md_path), "-o", str(body_docx),
              "--toc", "--toc-depth=3"],
-            check=True,
+            cwd=str(md_dir),
+            capture_output=True,
+            text=True,
         )
+        if proc.returncode != 0:
+            sys.stderr.write(proc.stderr)
+            raise SystemExit(f"pandoc failed (exit {proc.returncode})")
+        # pandoc drops unresolved images with only a warning and exit 0 — make
+        # that loud so missing figures are never shipped silently.
+        missing = [ln for ln in proc.stderr.splitlines()
+                   if "Could not fetch resource" in ln]
+        if missing:
+            sys.stderr.write(
+                "\nWARNING: pandoc could not fetch these images; the .docx will "
+                "be missing figures. Check the paths (they must be relative to "
+                f"the draft at {md_dir}):\n")
+            for ln in missing:
+                sys.stderr.write("  " + ln + "\n")
         doc = Document(str(body_docx))
 
     # --- ensure explicit page geometry (pandoc leaves it inherited) --------

@@ -141,6 +141,19 @@ body), and writes the styled `.docx` next to the draft.
 > first real section in the draft. A title or author line above it is fine for
 > reading the markdown standalone — the script excludes it from the body.
 
+**Figures.** Write image paths in the draft relative to the draft's own location
+(e.g. `![Figure 1](../assets/fig1.png)` for a file in `docs/assets/`). The script
+runs `pandoc` from the draft's directory, so those paths resolve correctly no
+matter what working directory you launch the script from — no need to `cd` first.
+If a path is wrong, pandoc drops the image but still exits 0; the script catches
+that and prints a loud `WARNING: pandoc could not fetch these images` listing
+each one. If you see it, fix the path and rebuild. As a final check, confirm the
+embedded image count (figures + 1 for the logo):
+
+```bash
+python3 -c "import zipfile,sys; print(len([n for n in zipfile.ZipFile(sys.argv[1]).namelist() if n.startswith('word/media/')]))" "docs/td/<file>.docx"
+```
+
 ### Step 5 — Tell the user to update fields
 
 The TOC and the page numbers are Word fields. They are marked dirty, so Word
@@ -166,7 +179,13 @@ wrong in OOXML, and that the script already handles correctly:
 - **Logo at right in the header.** A right-aligned tab stop at the usable page
   width, then the image, keeps the title left and the logo hard-right.
 - **Justification.** The `Normal`, `Body Text`, and `First Paragraph` styles are
-  set to justified; heading styles keep their own alignment.
+  set to justified; heading styles keep their own alignment. References entries
+  are then overridden to left-aligned.
+- **Page breaks.** Forced before the Abstract (TOC keeps its page), before the
+  section after the Abstract (main content), and before References.
+- **Figure paths.** pandoc runs with the draft's directory as its working
+  directory, so relative image links resolve regardless of caller CWD; unfetched
+  images are surfaced as a loud warning instead of being dropped silently.
 
 Verify any change by reopening the output with `python-docx` and checking:
 `len(doc.sections) == 2`, section 0 has no header/footer reference, section 1 has
