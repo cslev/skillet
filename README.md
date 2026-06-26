@@ -47,10 +47,14 @@ To use anything from this repo in your own project, copy the relevant files into
 
 ---
 
-## Contributing
-
-<!-- Fill in if you want contributions, or remove this section. -->
-
 ## License
 
-<!-- Add a LICENSE file at the repo root. Common choices for skill collections: MIT, Apache 2.0, CC-BY. -->
+Released under the [MIT License](LICENSE).
+
+Some standalone skills are adapted from MIT-licensed upstream projects; each
+carries a `CREDITS.md` noting its source and original copyright. In particular,
+`caveman`, `grill-me`, and `handoff` derive from
+[mattpocock/skills](https://github.com/mattpocock/skills) (Copyright (c) 2026
+Matt Pocock), and `humanizer` derives from
+[blader/humanizer](https://github.com/blader/humanizer) (Copyright (c) 2025
+Siqi Chen). All are MIT-licensed.
