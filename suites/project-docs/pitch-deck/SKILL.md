@@ -1,34 +1,10 @@
 ---
 name: pitch-deck
 argument-hint: "Purpose and audience, e.g. 'investor pitch', 'v2.0 release showcase for internal team', 'conference intro deck'"
-description: Generate a pitch deck (.pptx) about the project for external audiences (investors, conferences, technical evaluators) OR a release-showcase deck highlighting what's new in a specific version. Trigger when the user mentions a pitch deck, investor deck, conference deck, project overview deck, status deck, release deck, change summary deck, "what's new" deck, or asks for slides about the architecture, components, database, or what's new across the project. Also trigger for phrases like "pitch the project", "slides for the conference", "deck about how it works", "status update deck", "weekly progress deck", "where we are now", "slides for v2.0", "release showcase". Do NOT trigger for written release documentation like User Guides or Technical Guides (the documentation skill handles those), Technology Disclosures (the td skill handles those), inline code comments, or general code explanation.
+description: Generate a pitch deck (.pptx) about the project for external audiences (investors, conferences, technical evaluators) OR a release-showcase deck highlighting what's new in a specific version. Trigger when the user mentions a pitch deck, investor deck, conference deck, project overview deck, status deck, release deck, change summary deck, "what's new" deck, or asks for slides about the architecture, components, database, or what's new across the project. Also trigger for phrases like "pitch the project", "slides for the conference", "deck about how it works", "status update deck", "weekly progress deck", "where we are now", "slides for v2.0", "release showcase". Do NOT trigger for written release documentation like User Guides or Technical Guides (the documentation skill handles those), Technology Disclosures (the td skill handles those), TD presentation decks (the td-deck skill handles those), inline code comments, or general code explanation.
 ---
 
 # Pitch Deck Skill
-
-This skill generates pitch decks about the project.
-
-**Distinct from the `documentation` skill**: that skill produces versioned release documentation with strict version-diffing logic. This skill produces standalone pitch decks. Pitch decks come in two modes: **(a) fresh introduction** for a new audience, or **(b) what's-new / release showcase** highlighting changes since a previous version. The user chooses the mode at the start of every run.
-
-**Distinct from the `td` skill**: that skill produces Technology Disclosures (research-paper-style writeups). This skill produces persuasive/narrative slide decks. Different audience and different format.
-
-## What this produces
-
-A single `.pptx` pitch deck per request. Decks are generated fresh each time — there is no canonical version. The user may ask for the same deck repeatedly with different framing; treat each request as independent.
-
-## Audience model
-
-Default audience for project pitch decks: **mixed external audiences** (investors, conference attendees, prospects, technical evaluators). Often mostly non-technical with a technical minority who will push on the architecture and component sections.
-
-Calibration this implies:
-- **Opening framing is accessible.** Assume the reader doesn't know what the project does. No jargon in the first two slides.
-- **The technical core is substantive, not hand-wavy.** Vague boxes labeled "AI MAGIC" or "PROCESSING" lose credibility. Technical attendees will spot them instantly.
-- **No marketing fluff.** Sophisticated audiences spot it. State what the system does and how, plainly.
-- **No problem-statement-sales-pitch-call-to-action arc by default.** Technical pitch decks are about what + how + architecture + components. Add other slides only if the user explicitly asks.
-
-If the user describes a different audience (e.g. internal stakeholders, technical-only review, sales prospects), adjust calibration accordingly in Step 1.
-
----
 
 ## On activation
 
@@ -36,231 +12,166 @@ If the user describes a different audience (e.g. internal stakeholders, technica
 
 > **Pitch Deck skill activated.** I'll guide you through a few quick questions, then generate a `.pptx` deck tailored to your audience and purpose.
 
-Then proceed immediately to Step 1. No further preamble.
+Then proceed immediately to the Bootstrap check and Step 1. No further preamble.
+
+---
+
+## What this produces
+
+A single `.pptx` deck per request, generated fresh each time — there is no canonical version. Two modes, chosen by the user at the start of every run:
+
+- **(a) Fresh introduction** for a new audience
+- **(b) What's-new / release showcase** highlighting changes since a previous version
+
+**Distinct from siblings:** the `documentation` skill produces versioned written release docs; the `td` skill produces Technology Disclosures; the `td-deck` skill turns a TD into an IP-review deck. This skill produces persuasive/narrative slide decks.
+
+## Audience model
+
+Default: **mixed external audiences** (investors, conference attendees, prospects, technical evaluators) — mostly non-technical, with a technical minority who will push on the architecture and component slides.
+
+- **Accessible opening.** Assume the reader doesn't know what the project does. No jargon in the first two slides.
+- **Substantive technical core.** Vague boxes labeled "AI MAGIC" or "PROCESSING" lose credibility instantly.
+- **No marketing fluff.** State what the system does and how, plainly. The anti-slop rules in `../deck-style.md` are mandatory.
+- **No problem → sales pitch → call-to-action arc by default.** These decks are about what + how + architecture + components. Add other slides only if the user explicitly asks.
+
+If the user describes a different audience (internal stakeholders, technical-only review, sales prospects), adjust calibration in Step 1.
 
 ---
 
 ## Prerequisites
 
-`python-pptx` must be installed in the environment (`pip install python-pptx`). All `.pptx` generation depends on it.
+- **Required:** `python-pptx` (`pip install python-pptx`).
+- **Optional:** LibreOffice (`soffice`) and poppler (`pdftoppm`) — enable the render check in the quality gate. LibreOffice + Pillow + network access also enable icons on the big-type slides via `../icon_to_png.py`. If anything is missing, that step is skipped, never installed unprompted.
 
 ---
 
 ## Required reading before doing anything
 
-Before writing any code or generating any slides:
-
-1. Read `../project_context.md` — authoritative facts about the project. Everything in the deck must be consistent with this file.
-2. Run the Bootstrap check (see below) — creates output and samples directories if missing.
-3. Read the most recent `.pptx` file in `docs/decks/`, if one exists — for visual style/template reference only, not for content. Older projects may have pre-existing change-summary decks from before this skill suite took over slide-deck generation; ignore their content structure entirely and just borrow color/font/layout cues.
-
-For producing the `.pptx` file itself, use `python-pptx` via a Python script.
-
-If no existing `.pptx` is present in the project, generate a clean, modern style from scratch — neutral palette, generous whitespace, one idea per slide.
+1. **`../project_context.md`** — authoritative project facts. Everything in the deck must be consistent with it.
+2. **`../deck-style.md`** — copy rules, visual bans, default visual system and quality gate. Shared with `td-deck`. Every rule there applies to this skill.
+3. **Run the Bootstrap check** below.
+4. **Visual reference:** the most recent `.pptx` in `docs/decks/samples/` or `docs/decks/`, if any — for colour/font/layout cues only, never content. Older projects may have pre-existing change-summary decks; ignore their content structure. A reference deck takes precedence over the default visual system (see `../deck-style.md` §1), but the copy rules and visual bans still apply to every shape you add.
 
 ---
 
 ## Bootstrap — first-time setup check
 
-Run this before anything else, every invocation:
+Run every invocation. Output always goes to `docs/decks/`; reference samples live in `docs/decks/samples/`. These paths are fixed.
 
-1. Check whether `docs/decks/` exists at the project root.
-2. **If it does not exist**, create it:
-   ```bash
-   mkdir -p docs/decks/samples/
-   ```
-   Then tell the user:
-   > "This skill requires `docs/decks/` in your project root — created it now along with `docs/decks/samples/`. You can optionally drop reference `.pptx` files (previous decks, style templates) into `docs/decks/samples/` — the skill borrows visual cues (colors, fonts, layouts) from them. This is optional; if you have no reference decks, I'll generate a clean modern style from scratch. Tell me to proceed when ready."
+1. **If `docs/decks/` does not exist**, run `mkdir -p docs/decks/samples/` and tell the user:
+   > "This skill requires `docs/decks/` in your project root — created it now along with `docs/decks/samples/`. You can optionally drop reference `.pptx` files (previous decks, style templates) into `docs/decks/samples/` — the skill borrows visual cues (colors, fonts, layouts) from them. If you have none, I'll use a clean default style. Tell me to proceed when ready."
 
-   Wait for the user's response before continuing to Step 1.
-
-3. **If it exists** but `docs/decks/samples/` does not, create it silently and proceed.
-
----
-
-## Output directory
-
-Always use `docs/decks/` for output and `docs/decks/samples/` for reference samples. These paths are fixed — do not look for or create alternative locations.
-
-**Visual style reference:** read the most recent `.pptx` in `docs/decks/` or `docs/decks/samples/` for color/font/layout cues. If none exist, generate a clean modern default — neutral palette, generous whitespace.
-
-Filenames derive from the project name in `../project_context.md` plus mode/frame and date — see Step 1.
+   Wait for the user's response before continuing.
+2. **If it exists** but `docs/decks/samples/` does not, create it silently and proceed.
 
 ---
 
 ## Workflow
 
-### Step 1 — Clarify scope with the user
+### Step 1 — Clarify scope
 
-Ask the user before generating. **The first question is the most important** because it determines the deck's entire structure:
+Use the **AskUserQuestion** tool for these choices when it is available (plain text otherwise). The first question determines the deck's entire structure — ask it alone:
 
-1. **Deck mode** — ask:
+1. **Deck mode** — (a) fresh introduction, or (b) what's-new / release showcase for an audience that already knows the project. Do not proceed until the user picks one.
 
-   > "Is this deck:
-   > (a) a **fresh introduction** to the project for a new audience, or
-   > (b) a **what's-new / release showcase** highlighting what's changed since a previous version, for an audience that already knows the project?"
-
-   Do not proceed to the outline until the user picks one.
-
-   If the user picks **(b)**, ask immediately:
-   - **Comparison frame** — "Is this:
-     - (i) **Released version vs released version** — e.g. 'what's new in v2.0 vs v1.5'. For release announcements, post-mortems, retrospective decks tied to a specific release.
-     - (ii) **Current state vs a previous version** — e.g. 'where we are now vs v2.0'. For weekly/monthly status updates, ongoing-progress decks, meetup recaps."
-
-     **Default to (ii)** if the user doesn't specify and isn't clearly talking about a specific release event. Status-update decks are the more common case and fail more gracefully if guessed wrong.
+   If **(b)**, read `./whats-new.md` now, then ask:
+   - **Comparison frame** — (i) released version vs released version (release announcements, retrospectives), or (ii) current state vs a previous version (status updates, progress decks, meetup recaps). **Default to (ii)** if unclear — it's the more common case and fails more gracefully.
    - Which previous version is the comparison anchor?
-   - Should the deck include a brief recap of *what the project is* for audience members who may be new?
+   - Include a brief recap of *what the project is* for newcomers?
 
-2. **Audience** — confirm or override the default audience model (mixed external, mostly non-technical with technical minority). If the user says "this is for a technical-only audience" or "internal sales pitch," adjust framing depth accordingly. Audience determines what a sensible length default is, so ask this before length.
+Then ask the rest together (AskUserQuestion takes at most 4 questions per call — ask 2–6 in plain text or one call, and the brand questions 7–8 in their own calls, logo first, since the colour options depend on it):
 
-3. **Length target** — short (8–10 slides), standard (12–16), or extended (18–22). Propose a default based on the audience and context from Q2 rather than defaulting blindly to standard.
+2. **Audience** — confirm or override the default audience model. Ask before length, since audience sets the sensible length.
+3. **Length** — short (8–10 slides), standard (12–16), or extended (18–22). Propose a default from the audience instead of defaulting blindly to standard.
+4. **Filename** — using `<PROJECT>` from `../project_context.md`:
+   - Mode (a): `<PROJECT>_PitchDeck_<YYYY-MM-DD>.pptx`
+   - Mode (b)(i): `<PROJECT>_PitchDeck_WhatsNew_v<NEW>_<YYYY-MM-DD>.pptx`
+   - Mode (b)(ii): `<PROJECT>_PitchDeck_Status_<YYYY-MM-DD>.pptx`
+5. **Emphasis** — anything to emphasize or de-emphasize this round.
+6. **Off-limits** — features under NDA, customers not to be named, unreleased capabilities.
+7. **Company logo**, then 8. **colour template** — always ask both, in that order, exactly as described under "Brand questions" in `../deck-style.md` §4: the logo from `docs/assets/logos/`, analysed with `../logo_palette.py` to propose a matching template, which the user approves (or picks a preset / reference-deck colours / their own). Never pick colours or skip the logo on the user's behalf.
 
-4. **Filename / suffix** — using the project name from `../project_context.md` (call it `<PROJECT>`), default patterns:
-   - Mode (a) fresh intro: `<PROJECT>_PitchDeck_<YYYY-MM-DD>.pptx`
-   - Mode (b) frame (i) version-vs-version: `<PROJECT>_PitchDeck_WhatsNew_v<NEW>_<YYYY-MM-DD>.pptx`
-   - Mode (b) frame (ii) current-state-vs-version: `<PROJECT>_PitchDeck_Status_<YYYY-MM-DD>.pptx`
+### Step 2 — Pull the project facts
 
-   Confirm the date or offer to let the user supply a custom suffix.
+**Always:** read `../project_context.md` end-to-end. Every factual claim in the deck must trace back to it or to the user's answers in Step 1. If it still has unfilled `<fill in: ...>` markers, stop and tell the user. If a fact you need isn't there, ask — never invent it.
 
-5. **Anything to emphasize or de-emphasize** this round.
+- **Mode (a):** `../project_context.md` is the only source. Do not read release docs in `docs/releases/` — they're aimed at a different audience.
+- **Mode (b):** follow the source tiers and build the change inventory as described in `./whats-new.md`. Get the user to confirm the inventory before the outline.
 
-6. **Anything off-limits** — features still under NDA, customers not to be named, unreleased capabilities.
+### Step 3 — Outline with assertion titles
 
-### Step 2 — Pull the project facts and (in mode b) determine the source tier
+Produce a plain-text outline. At the top: the deck's **core message** (one sentence) and its 3–5 supporting points (`../deck-style.md` §2). Then, for each slide: its **role**, its **assertion title**, its **layout** (`../deck-style.md` §4, or the reference deck's equivalent) and a 1-line content summary. Read the titles in sequence — they should tell the story on their own. Check the layout column for long runs of the same layout or of bullet slides before showing the outline.
 
-**Always:** read `../project_context.md` end-to-end. Every factual claim in the deck must trace back to it (or to the user's answers in Step 1). If `../project_context.md` has placeholder `<fill in: ...>` markers still unfilled, stop and tell the user.
+**Mode (a) — fresh introduction** (standard length):
+1. **Title** — project name, one-line tagline (plain description, no slogans), presenter, date
+2. **What it is** — plain language: what this thing does and for whom, opening on a concrete fact
+3. **How it works** — end-to-end story in 3–5 numbered steps, no jargon
+4. **Architecture** — one diagram-placeholder slide; components labeled with canonical names from `../project_context.md`
+5+. **Component slides** — one per major component, ordered by the user's emphasis. Derive the list from `../project_context.md` and the repo layout; confirm it with the user if what counts as "major" is ambiguous.
+- **Data / database** — if relevant, one schema-level slide after the components
 
-If a fact you need for the deck isn't in `../project_context.md`, ask the user rather than inventing it.
+**Mode (b):** use the frame (i) or (ii) outline in `./whats-new.md`.
 
-**In mode (a)** (fresh introduction), `../project_context.md` is the only source. Do not read release docs in `docs/releases/` — they're aimed at a different audience. Proceed to Step 3.
+**Big-type slides:** in either mode, the outline includes section dividers where the core message splits into real sections (at most two in a deck of ≤ 10 slides, counted in the length), and a closing slide that restates the core message. Name the icon planned for each (`../deck-style.md` §4).
 
-**In mode (b)** (what's-new), the source strategy depends on the comparison frame.
+**Mode (a) uses no markers** (`[New in v…]`, `[In progress]`) and no version-diffing logic.
 
----
-
-#### Frame (i) — Released version vs released version
-
-The deck is about a specific release. If release docs for that version exist, they ARE the curated answer. Check tiers:
-
-**Tier 1 — Release docs for the new version exist** in `docs/releases/` (User Guide and/or Technical Guide for `<NEW>`). **Prefer them as the source of truth.** They've already been generated through the documentation skill (or by the user manually) and the change inventory was validated. Read both guides if both exist; the User Guide framing tends to be more pitch-friendly (operational impact, user-facing capability), while the Technical Guide gives the implementation depth a technical attendee may ask about. The `[New in v<NEW>]` markers in those docs are authoritative — every item carrying that marker is a candidate for the pitch deck.
-
-Do **not** re-run git log or re-read the changelog when Tier 1 applies. The markers in the guides already encode that work.
-
-**Tier 2 — Release docs exist for the previous version but not the new one.** Read the previous-version docs to understand the "before" state, then determine the delta via the changelog and:
-```bash
-git log <previous-version-tag>..<new-version-tag-or-HEAD> --oneline --no-merges
-```
-Mention to the user once: "I don't have v<NEW> release docs, so I'm building from the v<PREVIOUS> docs plus changelog and git log. You may want to run the documentation skill first for a more reliable result."
-
-**Tier 3 — No release docs in `docs/releases/` at all.** Fall back to gathering change signal from scratch via the changelog, git log, and code inspection.
-
----
-
-#### Frame (ii) — Current state vs a previous version
-
-The deck is about *where things are now*, not about a specific release. Docs reflect a past snapshot (potentially months old) and are NOT the source of truth for current state. **Always use git/changelog/code as the primary source, regardless of whether docs exist.**
-
-Gather change signal:
-1. **Changelog** — read everything after the comparison-anchor version. If the changelog has a Keep-a-Changelog-style "Unreleased" section, read that too.
-2. **Git log since the anchor version**, all the way to current HEAD: `git log <anchor-version-tag>..HEAD --oneline --no-merges`. Pay attention to dates — recency matters for status decks.
-3. **Code inspection** for anything ambiguous.
-
-Docs (if they exist for the anchor version) are useful as a **reference for the "before" state only** — to remind yourself what the project looked like at the anchor, then frame what's new relative to that. Do not use docs as the source of "what's new" itself.
-
----
-
-**Regardless of frame:** build a **pitch-relevant change inventory**. This is narrower than the release-doc change inventory. Only include:
-
-- **Headline additions** — major new capabilities a non-engineer would care about
-- **Notable improvements** — performance, scale, accuracy gains with concrete numbers
-- **Architectural shifts** — meaningful changes to how the system works
-- **Work in progress** — *frame (ii) only* — significant ongoing efforts worth flagging, marked clearly as in-progress
-
-Explicitly **exclude**: bug fixes, internal refactors, minor parameter changes, dependency bumps.
-
-Share the inventory with the user and ask them to confirm or trim before generating the outline.
-
-### Step 3 — Outline before slides
-
-Produce a plain-text slide-by-slide outline and share it with the user for sign-off. Outlines are cheap to iterate; finished decks are not.
-
-**Mode (a) — Fresh introduction outline** (standard-length deck):
-1. **Title** — project name, one-line tagline, presenter, date
-2. **What it is** — plain language, what does this thing do
-3. **How it works (high level)** — end-to-end story in 3–5 numbered steps. No jargon.
-4. **Architecture** — single diagram slide with placeholder. Major components labeled with canonical names from `../project_context.md`.
-5+. **Component deep dives** — one slide per major component (variable count). Derive the component list from `../project_context.md`'s description and repo layout, and from inspecting the codebase if those aren't detailed enough. Confirm the list with the user before generating slides if there's any ambiguity about what counts as a "major" component. Order matches the user's emphasis from Step 1.
-- **Data/database** — if relevant, add one slide after the component dives. Schema-level view.
-
-**Mode (b) frame (i) — Version-vs-version outline** (standard-length deck):
-1. **Title** — comparison framing ("v1.5 → v2.0: What's New")
-2. **Quick recap (optional)** — if some audience members may be new
-3. **What's new at a glance** — 3–6 bullets from the change inventory
-4. **Deep dive on each major addition** — one slide each, use `[New in v<NEW>]` marker
-5. **Improvements** — concrete numbers
-6. **Architectural shifts** — before/after diagram if applicable
-7. **What this enables** — capability framing
-
-**Mode (b) frame (ii) — Current-state outline** (standard-length deck):
-1. **Title** — status framing ("Where we are: <Month Year>" or "Progress since v<ANCHOR>"). Avoid version-delta framing — this isn't one.
-2. **Quick recap (optional)**
-3. **Headline progress** — 3–6 bullets, ordered by impact, not chronology
-4. **Deep dive on each headline item** — frame as "we now do X" not "v<X> adds X." Use `[In progress]` for unshipped work.
-5. **Improvements**
-6. **Architectural shifts** — if any
-7. **What's next (optional)** — only if user asked for it
-
-The marker convention `[New in v<NEW>]` applies in frame (i) only. Frame (ii) uses `[In progress]` for unshipped work and no marker for shipped items. In mode (a), no markers at all.
+Get sign-off through **AskUserQuestion** — never a prose "shall I build it?". One question ("Build this deck, or adjust first?") with 2–3 options tailored to this outline, e.g. **Build it** / **Adjust the structure** (name the most likely tweak, such as "split the architecture slide") / **Change the angle**. Generate only after **Build it**, or after the user's change is folded in and re-approved. Outlines are cheap to iterate; finished decks are not.
 
 ### Step 4 — Diagram placeholders
 
-For every slide that should contain a diagram (architecture, component flow, DB schema), insert a **clearly marked placeholder** rather than attempting to auto-generate diagrams:
+For every slide that needs a diagram (architecture, component flow, DB schema), insert a placeholder per `../deck-style.md` §4 instead of drawing one:
 
-- A large outlined rectangle filling the slide's diagram area
-- Inside, centered text: `[ DIAGRAM PLACEHOLDER ]`
-- Below: a one-line description of what the diagram should show
-- In speaker notes for that slide: a more detailed prompt covering which components should appear and how they connect
+- An outline-only rectangle filling the diagram area
+- Centered label `[ DIAGRAM PLACEHOLDER ]`, with a one-line description of what the diagram should show underneath
+- In speaker notes: a detailed brief — which components appear and how they connect
 
-Auto-generated diagrams in pitch decks consistently look amateur. A clean placeholder with a detailed brief in speaker notes is more useful.
+Auto-generated diagrams in pitch decks consistently look amateur. A clean placeholder with a good brief is more useful.
 
 ### Step 5 — Generate the deck
 
-Once the outline is approved:
+- Write a Python script using `python-pptx`; follow `../deck-style.md` §3–4 (or the reference deck's style, per §1): the brand frame on every content slide, and brand-background title, divider and closing slides with big type and one icon or the logo
+- One idea per slide. More than 5 bullets or ~60 words of body text → split
+- Use the layout chosen in the outline; vary form instead of defaulting to bullets
+- Data slides: one claim, one native editable chart or table, values labelled, a source line when the origin is known
+- Speaker notes on every slide: full spoken sentences, presenter script plus diagram briefs, same copy rules as slides
+- Canonical terminology from `../project_context.md` on every slide
+- Apply the marker conventions from Step 3
 
-- Use `python-pptx` via a Python script to produce the file
-- Borrow visual cues (colors, fonts, title styles) from existing `.pptx` files in `docs/decks/` or `docs/decks/samples/` if present; otherwise use a clean modern default
-- One idea per slide. If a slide needs more than ~5 bullets or ~60 words of body text, split it.
-- Speaker notes on every slide (full sentences, presenter script + diagram briefs)
-- Use canonical terminology from `../project_context.md`
-- Apply marker conventions per the rules in Step 3
+### Step 6 — Quality gate
 
-### Step 6 — Hand off
+Run the full quality gate in `../deck-style.md` §5:
 
-Provide the generated file and a short summary:
-- Filename and location
+1. `python3 <suite-dir>/lint_deck.py docs/decks/<file>.pptx --max-words 60` (add `--allow` for canonical terms that hit the vocabulary ban). Fix and regenerate until exit code 0.
+2. Render check, if `soffice` and `pdftoppm` are installed; otherwise skip and note it.
+3. Editing pass (titles, claims, 8-second test, cuts, any-topic test, rhythm).
+
+### Step 7 — Hand off
+
+Give the full path of the file, then a short summary:
 - Slide count and section breakdown
-- A list of diagram placeholders the user still needs to fill in
-- Anything in `../project_context.md` that was incomplete or that you had to ask the user about
+- Diagram placeholders still to fill in
+- Numbers on slides whose origin is unknown (shown without a source line)
+- Quality gate result: lint errors/warnings remaining (with reasons), and whether the render check ran or was skipped (and why)
+- Anything in `../project_context.md` that was incomplete or that you had to ask about
 
 ---
 
 ## Things to get right
 
 - **No invented facts.** Numbers, capabilities, integrations — all from `../project_context.md` or explicit user input.
-- **Technical sections must hold up to scrutiny.** Aim for "would a senior engineer in the audience find this credible."
-- **Canonical terminology, every slide.** Inconsistency on terms is the fastest signal that a deck was machine-generated.
-- **Diagram placeholders are real placeholders.** Don't try ASCII art or auto-shapes.
+- **Technical slides hold up to scrutiny.** Would a senior engineer in the audience find this credible?
+- **Canonical terminology, every slide.** Inconsistent terms are the fastest signal a deck was machine-generated.
+- **No slop.** `../deck-style.md` is not optional styling advice — it's the acceptance criteria, enforced by the linter.
 
 ## Things to avoid
 
-- Generating a deck without first asking which mode (a or b), and in mode (b) which frame (i or ii), and without the user-confirmed outline
-- Adding sales/problem/call-to-action slides not in the agreed scope
-- In mode (a), pulling in version-diffing logic or `[New in vX.X]` markers
-- In mode (a), reading release docs at all — `../project_context.md` is the only source
-- In mode (b) frame (i) Tier 1 (v<NEW> docs exist), re-running git log to second-guess the docs
-- In mode (b) frame (ii), trusting docs as the source of "what's new" — docs are a snapshot, not current state
-- In mode (b), highlighting bug fixes or internal refactors that don't matter to the audience
-- Framing a frame (ii) deck as a version-vs-version delta
-- Adding source-tier warnings *inside* the deck
+- Generating without the mode (and, in mode (b), the frame) chosen, and without an approved outline
+- Topic-label titles ("Architecture", "Performance") instead of assertions
+- Titles or bullets that explain *why* something happened when the source doesn't say
+- Slides that exist because a pitch template has them, not because they serve the core message
+- Adding sales/problem/call-to-action, "Key takeaways" or "Thank you" slides not in the agreed scope
+- In mode (a), version-diffing logic, markers, or reading release docs
 - Filling unknown facts with plausible-sounding guesses
-- One-slide-fits-all dumps where five separate ideas pile onto one slide
+- One slide carrying five ideas
+- Delivering a deck that fails the linter

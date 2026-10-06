@@ -18,7 +18,14 @@ Then proceed immediately to Phase 1. No further preamble.
 
 ## Prerequisites
 
-`python-pptx` must be installed in the environment (`pip install python-pptx`). All `.pptx` generation depends on it.
+- **Required:** `python-pptx` (`pip install python-pptx`). All `.pptx` generation depends on it.
+- **Optional:** LibreOffice (`soffice`) and poppler (`pdftoppm`) — enable the render check in Phase 4. LibreOffice + Pillow + network access also enable icons on the big-type slides via `../icon_to_png.py`. If anything is missing, that step is skipped, never installed unprompted.
+
+---
+
+## Required reading
+
+**`../deck-style.md`** — copy rules, visual bans, default visual system and quality gate. Shared with `pitch-deck`. Read it before Phase 2; every rule applies to this skill, with one precedence rule: when `template.pptx` is used, the template's own styling wins and the visual bans apply only to shapes you add. The copy rules always apply.
 
 ---
 
@@ -101,7 +108,7 @@ Already handled by "Samples handling" above. At this point you know:
 - Whether `docs/td-decks/samples/template.pptx` exists → will use it as the generation base, or fall back
 - Whether reference style decks exist → will use them for visual calibration, or proceed without
 
-**If no `template.pptx` was found**: tell the user and offer two options:
+**If no `template.pptx` was found**: tell the user and offer two options (via **AskUserQuestion** when available):
 
 > "No `template.pptx` found in `docs/td-decks/samples/`. How would you like to proceed?
 > (a) Use a default TD presentation structure I'll propose — a standard layout for IP review board presentations, which you can adjust.
@@ -120,6 +127,8 @@ Bundle these and ask once:
 1. **Length target** — how many slides? Default: 10–14 for a standard IP review board presentation.
 2. **Anything to emphasize** — a specific result, a particular innovation, a component the reviewers will push on.
 3. **Anything off-limits** — unreleased capabilities, NDA-bound details, internal implementation specifics not yet disclosed.
+4. **Company logo** — always ask (logo from `docs/assets/logos/`, per "Brand questions" in `../deck-style.md` §4), even with a template: confirm whether the template already carries the logo or one should be added.
+5. **Colour template** — if `template.pptx` is used, its colours apply and this is skipped. Otherwise always ask after the logo: analyse the logo with `../logo_palette.py`, offer the logo-derived template first for approval, plus presets or the user's own colours (same section). Never pick colours on the user's behalf.
 
 ---
 
@@ -146,7 +155,17 @@ Use the default outline defined at the end of this skill.
 
 **Numbers must be verbatim from the TD** regardless of template presence. "92% accuracy" not "~90%" or "over 90%."
 
-Share the extracted content map (slide-by-slide summary) with the user and ask them to confirm or adjust before generating. This is the cheapest point to catch mistakes. If the mapping includes synthesized content (e.g. patent claims), present those drafts here too for confirmation before slide generation.
+**Assertion titles.** Each content slide gets a title that states its point as a short sentence (per `../deck-style.md` §2) — e.g. `Adaptive batching cuts inference latency by 38%`, not `Results`. Exception: when `template.pptx` / `specific_instructions.md` fixes a slide's title text, keep the template's title and put the assertion as the first line of the body.
+
+**Copy rules vs. TD wording.** The anti-slop vocabulary bans apply to wording you write. If the TD itself uses a banned word as a technical term (e.g. "robust estimator"), keep it verbatim and pass it to the linter with `--allow`. Don't import the TD's promotional adjectives ("novel", "innovative") onto slides — show the novelty through the mechanism instead.
+
+**Core message.** Open the content map with one sentence stating the TD's contribution (usually its key-novelty claim) and the 3–5 points that support it (`../deck-style.md` §2). Every slide serves one of them.
+
+**Source lines.** Results, benchmark and prior-art slides carry a small `Source: …` line citing the TD section, table or reference the numbers come from.
+
+**Layouts.** Without a template, give each slide a layout from `../deck-style.md` §4 (e.g. a headline result as Big number, the contribution as Statement) and avoid long runs of bullet slides.
+
+Share the extracted content map (core message, then slide-by-slide: role, title, layout, content summary) with the user and get approval via **AskUserQuestion** — one question with 2–3 options tailored to this map (e.g. **Build it** / **Adjust the mapping** / **Revise the claims**), never a prose "shall I build it?". This is the cheapest point to catch mistakes. If the mapping includes synthesized content (e.g. patent claims), present those drafts here too for confirmation before slide generation.
 
 ---
 
@@ -154,20 +173,31 @@ Share the extracted content map (slide-by-slide summary) with the user and ask t
 
 Once the content map is confirmed:
 
-- Load `docs/td-decks/samples/template.pptx` if found; otherwise use a clean modern default (neutral palette, generous whitespace)
+- Load `docs/td-decks/samples/template.pptx` if found; otherwise use the default visual system in `../deck-style.md` §4, including the brand frame and the big-type title, divider and closing slides (with a template, use the template's own cover and divider layouts instead)
 - Borrow layout and density cues from other `.pptx` files in `docs/td-decks/samples/` if present
+- Every shape you add follows the visual bans in `../deck-style.md` §3 — no eyebrows, badges, shadows, rounded corners, icon-card grids
 - One idea per slide. If a slide needs more than ~5 bullets or ~50 words of body text, split it
-- Speaker notes on every slide — full sentences, presenter script
+- Speaker notes on every slide — full spoken sentences, presenter script, same copy rules as the slides
 - Use canonical terminology from the TD throughout — no paraphrasing of technical terms
-- Apply diagram placeholders for any architecture, flow, or schema slide:
-  - A large outlined rectangle filling the diagram area
+- Apply diagram placeholders (per `../deck-style.md` §4) for any architecture, flow, or schema slide:
+  - An outline-only rectangle filling the diagram area
   - Centered text: `[ DIAGRAM PLACEHOLDER ]`
   - Below: one-line description of what the diagram should show
   - In speaker notes: a detailed brief covering which components appear and how they connect
 
 ---
 
-### Phase 4 — Hand off
+### Phase 4 — Quality gate
+
+Run the full quality gate in `../deck-style.md` §5:
+
+1. `python3 <suite-dir>/lint_deck.py docs/td-decks/<file>.pptx --max-words 50` — add `--template` if the deck was built on `template.pptx`, and `--allow` for TD terms that hit the vocabulary ban. Fix and regenerate until exit code 0.
+2. Render check, if `soffice` and `pdftoppm` are installed; otherwise skip and note it. With a template, look especially for leftover template guidance text and content overflowing the template's placeholders.
+3. Editing pass (titles, claims, 8-second test, cuts, any-topic test, rhythm).
+
+---
+
+### Phase 5 — Hand off
 
 Mention the full path of the generated file directly so the user can open it immediately.
 
@@ -178,12 +208,13 @@ Then provide a short written summary:
 - Whether `docs/td-decks/samples/template.pptx` was used
 - Whether style reference decks were available in `docs/td-decks/samples/` — if not, flag that visual calibration was done without house-style samples
 - Anything in the TD that was ambiguous and required a judgment call during content extraction
+- Quality gate result: lint errors/warnings remaining (with reasons), and whether the render check ran or was skipped (and why)
 
 ---
 
 ## Default outline
 
-Used when no template is found and the user picks option (a). Standard structure for an IP review board + technical reviewer audience (10–12 slides):
+Used when no template is found and the user picks option (a). Standard structure for an IP review board + technical reviewer audience (10–12 slides). The bold names are slide **roles**, not titles — each content slide still gets an assertion title:
 
 1. **Title** — TD title, authors/inventors, project name, date
 2. **Overview** — one-slide abstract: what the contribution is, in plain language
@@ -193,7 +224,7 @@ Used when no template is found and the user picks option (a). Standard structure
 6. **Technical approach** — how it works at a high level (diagram placeholder)
 7. **Architecture / components** — deeper technical breakdown (diagram placeholder)
 8. **Results** — evaluation metrics, concrete numbers, baseline comparisons if available
-9. **Conclusion** — restate the contribution; broaden to implications
+9. **Conclusion** — implications and where else the contribution applies; don't just repeat earlier slide titles
 10. **References** — condensed, IEEE-style
 
 Optional additions (discuss with user in 1c):
@@ -220,3 +251,9 @@ Optional additions (discuss with user in 1c):
 - Filling diagram slots with ASCII art or auto-generated shapes
 - Saving output into the `td/` directory — decks go in `td-decks/` (or equivalent)
 - Using the pitch-deck skill's product-pitch framing — this is a research/IP presentation, not a pitch
+- Topic-label titles ("Results", "Approach") on slides whose title you control
+- Promotional adjectives ("novel", "innovative", "powerful") in place of the actual mechanism or number
+- Explanations, causes or implications the TD doesn't state — an assertion title must be supported by the TD
+- Prior-art or benchmark tables where the contribution wins every row by construction — show where baselines are stronger if the TD reports it
+- Restyling or deleting template elements to satisfy the visual bans — the bans cover only shapes you add
+- Delivering a deck that fails the linter

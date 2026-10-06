@@ -48,8 +48,14 @@ your-project/
     └── skills/
         ├── README.md                   ← from this suite
         ├── project_context.md          ← from this suite (fill in for your project)
+        ├── deck-style.md               ← shared anti-slop rules for both deck skills
+        ├── lint_deck.py                ← shared deck linter (quality gate)
+        ├── icon_to_png.py              ← shared: renders Lucide icons for deck slides
+        ├── logo_palette.py             ← shared: suggests a deck colour template from the company logo
         ├── documentation/SKILL.md
-        ├── pitch-deck/SKILL.md
+        ├── pitch-deck/
+        │   ├── SKILL.md
+        │   └── whats-new.md
         ├── td/
         │   └── SKILL.md
         └── td-deck/
@@ -96,10 +102,12 @@ your-project/
 4. **Bootstrap happens automatically on first invocation.** Each skill checks for its output directory (`docs/td/`, `docs/td-decks/`, `docs/documentation/`, `docs/decks/`) at the start of every run. If the directory doesn't exist, the skill creates it along with a `samples/` subdirectory and pauses to tell you what to put there. This happens once per skill, the first time you use it in a project.
 
 5. **Drop samples before first use — or tell the skill to proceed without them.**
-   - **TD skill:** drop at least one sample TD (`.pdf` or `.docx`) into `docs/td/samples/`. The skill calibrates tone, structure, and citation style against them. Without samples, it will ask whether to proceed with abstract conventions only. Optionally drop your organization's logo into `docs/assets/logos/` (a shared asset directory created at bootstrap) — it goes on the cover page and in the page header of the final `.docx`. The `.docx` step needs both `pandoc` and `python-docx` installed, and offers to install them if missing.
+   - **TD skill:** drop at least one sample TD (`.pdf` or `.docx`) into `docs/td/samples/`. The skill calibrates tone, structure, and citation style against them. Without samples, it will ask whether to proceed with abstract conventions only. Optionally drop your organization's logo into `docs/assets/logos/` (a shared asset directory created at bootstrap) — it goes on the cover page and in the page header of the final `.docx`. The deck skills use the same logo, and suggest a deck colour template from it. The `.docx` step needs both `pandoc` and `python-docx` installed, and offers to install them if missing.
    - **TD Deck skill:** drop your organization's PowerPoint template into `docs/td-decks/samples/template.pptx`. Also copy `.claude/skills/td-deck/specific_instructions.md` to `docs/td-decks/samples/specific_instructions.md` and customize the slide-by-slide mapping to match your template.
    - **Documentation skill:** optionally drop reference `.docx` files into `docs/documentation/samples/` for style calibration. Not required — the skill will use the most recent release doc as its style reference once one exists.
    - **Pitch Deck skill:** optionally drop reference `.pptx` files into `docs/decks/samples/` for visual cues. Not required — the skill generates a clean modern default without them.
+
+6. **Optional: install LibreOffice and poppler** (`soffice`, `pdftoppm`) and Pillow for the two deck skills. With them, each deck is rendered to images and visually checked before hand-off, and the title and divider slides get icons; without them, those steps are skipped and the hand-off says so.
 
 ---
 
@@ -121,6 +129,20 @@ your-project/
 ```
 
 `td-deck` is the only skill with a hard dependency on another: it requires a completed TD file as input. All other skills are independent — you can adopt any one without the others. Skills cross-reference each other in their `description` fields only to make sure each triggers on the right phrases and not on phrases that belong to a sibling.
+
+---
+
+## Deck quality (pitch-deck and td-deck)
+
+Both deck skills follow `deck-style.md`: a one-sentence core message per deck, assertion-style slide titles that never claim more than the source supports, sentence case, no em dashes, a banned list of AI-slop vocabulary, varied slide layouts instead of bullet after bullet, a consistent brand frame (header and footer bands) with big-type title and divider slides, and visual bans (no eyebrow labels, badges, shadows, rounded corners, gradients, icon-card grids, stat-tile dashboards, page counters or AI-default palettes). When a `template.pptx` or reference deck is used, its styling wins; the bans then apply only to shapes the skill adds. Before hand-off, each deck must pass `lint_deck.py`:
+
+```bash
+python3 .claude/skills/lint_deck.py docs/decks/<file>.pptx [--template] [--max-words N] [--allow TERM ...]
+```
+
+To tune the rules for your org (e.g. allow a word that is part of your product's vocabulary), edit the banned list in both `deck-style.md` and `lint_deck.py`, or pass `--allow`.
+
+**Example:** [`docs/decks/PitchDeckSkill_PitchDeck_2026-10-06.pptx`](../../docs/decks/PitchDeckSkill_PitchDeck_2026-10-06.pptx) at the root of this repo is a pitch deck about the pitch-deck skill itself, generated by the skill: colour template derived from the logo in [`docs/assets/logos/`](../../docs/assets/logos/), brand frame, big-type dividers, and a clean lint run.
 
 ---
 
@@ -146,10 +168,16 @@ These skills are written to be generic. Common customizations:
 .claude/skills/
 ├── README.md                      ← this file
 ├── project_context.md             ← shared project facts (REQUIRED, fill in first)
+├── deck-style.md                  ← shared by pitch-deck and td-deck: copy rules, visual bans, default style, quality gate
+├── lint_deck.py                   ← deck linter run by both deck skills before hand-off (exit 1 on anti-slop violations)
+├── icon_to_png.py                 ← renders a Lucide icon to a recoloured PNG for divider/title slides (optional)
+├── logo_palette.py                ← analyses the logo in docs/assets/logos/ and proposes brand + highlight colours for approval
+├── CREDITS.md                     ← attribution for the adapted deck-style rules
 ├── documentation/
 │   └── SKILL.md
 ├── pitch-deck/
-│   └── SKILL.md
+│   ├── SKILL.md
+│   └── whats-new.md               ← Level 3 reference; loaded only for what's-new / status decks
 ├── td/
 │   ├── SKILL.md
 │   ├── review-rubric.md           ← Level 3 reference; loaded only during the self-review phase
