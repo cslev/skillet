@@ -55,7 +55,8 @@ your-project/
         ├── documentation/SKILL.md
         ├── pitch-deck/
         │   ├── SKILL.md
-        │   └── whats-new.md
+        │   ├── whats-new.md
+        │   └── style-from-reference.md
         ├── td/
         │   └── SKILL.md
         └── td-deck/
@@ -177,7 +178,8 @@ These skills are written to be generic. Common customizations:
 │   └── SKILL.md
 ├── pitch-deck/
 │   ├── SKILL.md
-│   └── whats-new.md               ← Level 3 reference; loaded only for what's-new / status decks
+│   ├── whats-new.md               ← Level 3 reference; loaded only for what's-new / status decks
+│   └── style-from-reference.md    ← Level 3 reference; loaded only when a reference .pptx exists in docs/decks/samples/
 ├── td/
 │   ├── SKILL.md
 │   ├── review-rubric.md           ← Level 3 reference; loaded only during the self-review phase

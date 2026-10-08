@@ -50,7 +50,7 @@ If the user describes a different audience (internal stakeholders, technical-onl
 1. **`../project_context.md`** — authoritative project facts. Everything in the deck must be consistent with it.
 2. **`../deck-style.md`** — copy rules, visual bans, default visual system and quality gate. Shared with `td-deck`. Every rule there applies to this skill.
 3. **Run the Bootstrap check** below.
-4. **Visual reference:** the most recent `.pptx` in `docs/decks/samples/` or `docs/decks/`, if any — for colour/font/layout cues only, never content. Older projects may have pre-existing change-summary decks; ignore their content structure. A reference deck takes precedence over the default visual system (see `../deck-style.md` §1), but the copy rules and visual bans still apply to every shape you add.
+4. **Visual reference:** if a `.pptx` exists in `docs/decks/samples/` or `docs/decks/`, read `./style-from-reference.md` now and follow it to extract a style (fonts, colours, positions, logo) from it — never its content or slide count. Older projects may have pre-existing change-summary decks; ignore their content structure entirely. The extracted style takes precedence over the default visual system (see `../deck-style.md` §1), but the copy rules and visual bans still apply to every shape you add.
 
 ---
 

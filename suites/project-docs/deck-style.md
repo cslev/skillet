@@ -6,7 +6,9 @@ Shared by the `pitch-deck` and `td-deck` skills. Read this before writing an out
 
 ## 1. Precedence
 
-- **A template or reference deck exists** (`template.pptx`, or a `.pptx` in the skill's samples directory): its master, fonts, colours and layouts win. Section 3 bans apply only to shapes **you add** — never restyle or delete template elements to satisfy them. Section 2 copy rules always apply.
+- **A template or reference deck exists** (`template.pptx`, or a `.pptx` in the skill's samples directory): its fonts, colours and layout positions win. Section 3 bans apply only to shapes **you add** — never restyle or delete template elements to satisfy them. Section 2 copy rules always apply.
+  - **`td-deck`** fills the template slide-for-slide: its master and slides are reused directly, per `specific_instructions.md`, and the deck never gains, loses or reorders slides beyond what the template defines.
+  - **`pitch-deck`** only adapts the *style* of a reference deck (see `pitch-deck/style-from-reference.md`): fonts, colours, positions and logo are extracted and reapplied, but the outline, slide count and layout choices stay the skill's own.
 - **No template**: use the default visual system in section 4.
 - Canonical terms from `project_context.md` (or verbatim TD wording, for td-deck) override the vocabulary bans. If a banned word *is* the product's name for something, keep it.
 
