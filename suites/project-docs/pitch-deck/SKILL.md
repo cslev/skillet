@@ -41,7 +41,7 @@ If the user describes a different audience (internal stakeholders, technical-onl
 ## Prerequisites
 
 - **Required:** `python-pptx` (`pip install python-pptx`).
-- **Optional:** LibreOffice (`soffice`) and poppler (`pdftoppm`) — enable the render check in the quality gate. LibreOffice + Pillow + network access also enable icons on the big-type slides via `../icon_to_png.py`. If anything is missing, that step is skipped, never installed unprompted.
+- **Optional:** LibreOffice (`soffice`) and poppler (`pdftoppm`) — enable the render check in the quality gate. LibreOffice + Pillow + network access also enable icons on the big-type slides via `../icon_to_png.py`. Pillow alone enables `../style_from_reference.py` (reads a reference deck's style). If anything is missing, that step is skipped, never installed unprompted.
 
 ---
 
@@ -50,7 +50,7 @@ If the user describes a different audience (internal stakeholders, technical-onl
 1. **`../project_context.md`** — authoritative project facts. Everything in the deck must be consistent with it.
 2. **`../deck-style.md`** — copy rules, visual bans, default visual system and quality gate. Shared with `td-deck`. Every rule there applies to this skill.
 3. **Run the Bootstrap check** below.
-4. **Visual reference:** if a `.pptx` exists in `docs/decks/samples/` or `docs/decks/`, read `./style-from-reference.md` now and follow it to extract a style (fonts, colours, positions, logo) from it — never its content or slide count. Older projects may have pre-existing change-summary decks; ignore their content structure entirely. The extracted style takes precedence over the default visual system (see `../deck-style.md` §1), but the copy rules and visual bans still apply to every shape you add.
+4. **Visual reference:** if a `.pptx` exists in `docs/decks/samples/` or `docs/decks/`, read `./style-from-reference.md` now and run `../style_from_reference.py` on it per that file's Step 1 — never reuse its content or slide count, only (depending on the mode chosen in Step 1 below) its actual layouts or just its style. Older projects may have pre-existing change-summary decks; ignore their content structure entirely. Have the script's output ready before Step 1, since question 7 there depends on it.
 
 ---
 
@@ -89,7 +89,8 @@ Then ask the rest together (AskUserQuestion takes at most 4 questions per call �
    - Mode (b)(ii): `<PROJECT>_PitchDeck_Status_<YYYY-MM-DD>.pptx`
 5. **Emphasis** — anything to emphasize or de-emphasize this round.
 6. **Off-limits** — features under NDA, customers not to be named, unreleased capabilities.
-7. **Company logo**, then 8. **colour template** — always ask both, in that order, exactly as described under "Brand questions" in `../deck-style.md` §4: the logo from `docs/assets/logos/`, analysed with `../logo_palette.py` to propose a matching template, which the user approves (or picks a preset / reference-deck colours / their own). Never pick colours or skip the logo on the user's behalf.
+7. **Template mode** — only if `style_from_reference.py` reported `reusable_as_template: true`: strict layout reuse (A) or style only (B), exactly as described in `./style-from-reference.md` Step 2. Skip this question entirely if no reference deck was found, or it wasn't a reusable template — mode B's extraction (or the default visual system, if there was no reference deck at all) applies automatically.
+8. **Company logo**, then 9. **colour template** — only when mode (B) applies (no reference deck, a non-reusable reference deck, or the user chose (B) over a reusable one): ask both, in that order, exactly as described under "Brand questions" in `../deck-style.md` §4 — the logo from `docs/assets/logos/`, analysed with `../logo_palette.py` to propose a matching template (or the reference deck's own `proposed_brand`/`proposed_highlight` if one was found), which the user approves. Never pick colours or skip the logo on the user's behalf. **Skip both when mode (A) was chosen** — the reused layouts already carry their own logo and colours; nothing to ask.
 
 ### Step 2 — Pull the project facts
 
@@ -100,7 +101,10 @@ Then ask the rest together (AskUserQuestion takes at most 4 questions per call �
 
 ### Step 3 — Outline with assertion titles
 
-Produce a plain-text outline. At the top: the deck's **core message** (one sentence) and its 3–5 supporting points (`../deck-style.md` §2). Then, for each slide: its **role**, its **assertion title**, its **layout** (`../deck-style.md` §4, or the reference deck's equivalent) and a 1-line content summary. Read the titles in sequence — they should tell the story on their own. Check the layout column for long runs of the same layout or of bullet slides before showing the outline.
+Produce a plain-text outline. At the top: the deck's **core message** (one sentence) and its 3–5 supporting points (`../deck-style.md` §2). Then, for each slide: its **role**, its **assertion title**, its **layout**, and a 1-line content summary. Read the titles in sequence — they should tell the story on their own. Check the layout column for long runs of the same layout or of bullet slides before showing the outline.
+
+- **Mode (A) (strict layout reuse):** the layout column names the actual catalogue entry this slide will use (e.g. `Content 4: Table`), chosen per `./style-from-reference.md` Step 4(A). Note any outline slide with no good match in the catalogue and flag it to the user before building.
+- **Otherwise:** the layout column uses `../deck-style.md` §4's own vocabulary (Text / Text + visual / Full-width visual / Big number / Statement).
 
 **Mode (a) — fresh introduction** (standard length):
 1. **Title** — project name, one-line tagline (plain description, no slogans), presenter, date
@@ -130,7 +134,11 @@ Auto-generated diagrams in pitch decks consistently look amateur. A clean placeh
 
 ### Step 5 — Generate the deck
 
-- Write a Python script using `python-pptx`; follow `../deck-style.md` §3–4 (or the reference deck's style, per §1): the brand frame on every content slide, and brand-background title, divider and closing slides with big type and one icon or the logo
+**Mode (A) (strict layout reuse):** follow `./style-from-reference.md` Step 4(A) — build on the reference file itself, drop its existing (demo) slides, `add_slide` from the catalogue layout chosen per outline slide, and fill each placeholder by its `idx`. Leave every non-placeholder design element (background art, logo, fixed closing-slide chrome) untouched.
+
+**Otherwise:** write a Python script using `python-pptx`; follow `../deck-style.md` §3–4 (using the extracted style from mode (B), or the default visual system if there was no reference deck): the brand frame on every content slide, and brand-background title, divider and closing slides with big type and one icon or the logo.
+
+Both modes:
 - One idea per slide. More than 5 bullets or ~60 words of body text → split
 - Use the layout chosen in the outline; vary form instead of defaulting to bullets
 - Data slides: one claim, one native editable chart or table, values labelled, a source line when the origin is known
@@ -142,7 +150,7 @@ Auto-generated diagrams in pitch decks consistently look amateur. A clean placeh
 
 Run the full quality gate in `../deck-style.md` §5:
 
-1. `python3 <suite-dir>/lint_deck.py docs/decks/<file>.pptx --max-words 60` (add `--allow` for canonical terms that hit the vocabulary ban). Fix and regenerate until exit code 0.
+1. `python3 <suite-dir>/lint_deck.py docs/decks/<file>.pptx --max-words 60` — add `--template` in mode (A) (the deck is almost entirely inherited formatting; the copy rules still run in full), and `--allow` for canonical terms that hit the vocabulary ban. Fix and regenerate until exit code 0.
 2. Render check, if `soffice` and `pdftoppm` are installed; otherwise skip and note it.
 3. Editing pass (titles, claims, 8-second test, cuts, any-topic test, rhythm).
 
@@ -150,6 +158,7 @@ Run the full quality gate in `../deck-style.md` §5:
 
 Give the full path of the file, then a short summary:
 - Slide count and section breakdown
+- Which mode built the deck (reused template layouts, extracted style, or the default visual system) and, in mode (A), any outline slide that had no good catalogue match
 - Diagram placeholders still to fill in
 - Numbers on slides whose origin is unknown (shown without a source line)
 - Quality gate result: lint errors/warnings remaining (with reasons), and whether the render check ran or was skipped (and why)
@@ -170,8 +179,10 @@ Give the full path of the file, then a short summary:
 - Topic-label titles ("Architecture", "Performance") instead of assertions
 - Titles or bullets that explain *why* something happened when the source doesn't say
 - Slides that exist because a pitch template has them, not because they serve the core message
-- Adding sales/problem/call-to-action, "Key takeaways" or "Thank you" slides not in the agreed scope
+- Adding sales/problem/call-to-action, "Key takeaways" or "Thank you" slides not in the agreed scope — this doesn't apply to a template's own fixed closing-slide chrome in strict layout reuse mode, which is the template's authored content, not this skill's filler
 - In mode (a), version-diffing logic, markers, or reading release docs
 - Filling unknown facts with plausible-sounding guesses
 - One slide carrying five ideas
 - Delivering a deck that fails the linter
+- In strict layout reuse, hand-drawing an approximation of a layout instead of instantiating the reference file's own layout object, or leaving a filled placeholder's old instructional text in place
+- Asking the brand-colour or logo questions when strict layout reuse was chosen — the reused layouts already carry both

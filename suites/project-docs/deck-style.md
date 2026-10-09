@@ -6,9 +6,10 @@ Shared by the `pitch-deck` and `td-deck` skills. Read this before writing an out
 
 ## 1. Precedence
 
-- **A template or reference deck exists** (`template.pptx`, or a `.pptx` in the skill's samples directory): its fonts, colours and layout positions win. Section 3 bans apply only to shapes **you add** — never restyle or delete template elements to satisfy them. Section 2 copy rules always apply.
+- **A template or reference deck exists** (`template.pptx`, or a `.pptx` in the skill's samples directory): its fonts, colours and layout positions win. Section 3 bans apply only to shapes **you add** — never restyle or delete template elements to satisfy them. Section 2 copy rules always apply, except that a template's own fixed, non-placeholder design elements (e.g. a baked-in "Thank you" on its own closing layout) are the template's authored content, not this skill's filler, so the copy bans don't apply to them.
   - **`td-deck`** fills the template slide-for-slide: its master and slides are reused directly, per `specific_instructions.md`, and the deck never gains, loses or reorders slides beyond what the template defines.
-  - **`pitch-deck`** only adapts the *style* of a reference deck (see `pitch-deck/style-from-reference.md`): fonts, colours, positions and logo are extracted and reapplied, but the outline, slide count and layout choices stay the skill's own.
+  - **`pitch-deck`**, when the reference deck is a real layout library, offers **strict layout reuse**: slide count, order and content stay this skill's own (it can create more or fewer slides than the reference deck has), but each slide is built from one of the reference file's own named layouts — its real masters, placeholders, fonts, logo and art — never a hand-drawn approximation (see `pitch-deck/style-from-reference.md`).
+  - **`pitch-deck`**, otherwise (a loose reference deck, or the user prefers it), falls back to **style only**: fonts, colours, positions and logo are extracted and reapplied to this skill's own brand-frame system (section 4) — nothing of the reference file's own slide construction is reused directly.
 - **No template**: use the default visual system in section 4.
 - Canonical terms from `project_context.md` (or verbatim TD wording, for td-deck) override the vocabulary bans. If a banned word *is* the product's name for something, keep it.
 

@@ -21,3 +21,7 @@ Fetches icons from **Lucide** (ISC licence): https://lucide.dev, https://github.
 ## `logo_palette.py`
 
 Written for this suite. Contrast thresholds follow WCAG 2.x (4.5 : 1 for text, 3 : 1 for graphics).
+
+## `style_from_reference.py`
+
+Written for this suite. Reuses the WCAG contrast math from `logo_palette.py`. Replaces an earlier written procedure (classify slides by eye, read fonts/colours by hand) with a deterministic script, so the same reference deck always extracts the same style. Also catalogues a real template's own named layouts (role, placeholder types/positions) so the skill can reuse them directly for strict layout reuse, instead of only extracting colours.
