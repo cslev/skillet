@@ -52,6 +52,7 @@ your-project/
         ├── lint_deck.py                ← shared deck linter (quality gate)
         ├── icon_to_png.py              ← shared: renders Lucide icons for deck slides
         ├── logo_palette.py             ← shared: suggests a deck colour template from the company logo
+        ├── style_from_reference.py     ← shared: extracts a style, or a reusable layout catalogue, from a reference .pptx
         ├── documentation/SKILL.md
         ├── pitch-deck/
         │   ├── SKILL.md
@@ -135,7 +136,7 @@ your-project/
 
 ## Deck quality (pitch-deck and td-deck)
 
-Both deck skills follow `deck-style.md`: a one-sentence core message per deck, assertion-style slide titles that never claim more than the source supports, sentence case, no em dashes, a banned list of AI-slop vocabulary, varied slide layouts instead of bullet after bullet, a consistent brand frame (header and footer bands) with big-type title and divider slides, and visual bans (no eyebrow labels, badges, shadows, rounded corners, gradients, icon-card grids, stat-tile dashboards, page counters or AI-default palettes). When a `template.pptx` or reference deck is used, its styling wins; the bans then apply only to shapes the skill adds. Before hand-off, each deck must pass `lint_deck.py`:
+Both deck skills follow `deck-style.md`: a one-sentence core message per deck, assertion-style slide titles that never claim more than the source supports, sentence case, no em dashes, a banned list of AI-slop vocabulary, varied slide layouts instead of bullet after bullet, a consistent brand frame (header and footer bands) with big-type title and divider slides, and visual bans, and a deterministic script to extract that style from a reference deck when one exists (no eyebrow labels, badges, shadows, rounded corners, gradients, icon-card grids, stat-tile dashboards, page counters or AI-default palettes). When a `template.pptx` or reference deck is used, its styling wins; the bans then apply only to shapes the skill adds. Before hand-off, each deck must pass `lint_deck.py`:
 
 ```bash
 python3 .claude/skills/lint_deck.py docs/decks/<file>.pptx [--template] [--max-words N] [--allow TERM ...]
@@ -173,6 +174,7 @@ These skills are written to be generic. Common customizations:
 ├── lint_deck.py                   ← deck linter run by both deck skills before hand-off (exit 1 on anti-slop violations)
 ├── icon_to_png.py                 ← renders a Lucide icon to a recoloured PNG for divider/title slides (optional)
 ├── logo_palette.py                ← analyses the logo in docs/assets/logos/ and proposes brand + highlight colours for approval
+├── style_from_reference.py        ← extracts a style (or, for a real template, a reusable layout catalogue) from a reference .pptx in docs/decks/samples/
 ├── CREDITS.md                     ← attribution for the adapted deck-style rules
 ├── documentation/
 │   └── SKILL.md
