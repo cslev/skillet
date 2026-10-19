@@ -253,20 +253,31 @@ def placeholder_box(slide, x, y, w, h, font, label="[ IMAGE PLACEHOLDER ]", desc
     return shp
 
 
-def add_table(slide, rows, x, y, w, col_widths, font, size=14, row_h=0.45):
-    """Plain native table (first row is the header). Column widths in inches; they
-    are set per column because resizing the frame does not rescale them."""
+def add_table(slide, rows, x, y, w, col_widths, font, size=14, row_h=0.45, header_fill=None,
+              header_text="#FFFFFF", body_text="#1F2328", zebra="#F1F3F5"):
+    """Native table (first row is the header). Column widths in inches, set per column
+    because resizing the frame does not rescale them. With header_fill the table is
+    styled explicitly (header fill, plain white or zebra rows); without it the
+    template's table style applies, which is what you want on a template."""
     gf = slide.shapes.add_table(len(rows), len(rows[0]), Inches(x), Inches(y), Inches(w), Inches(row_h * len(rows)))
     t = gf.table
     for i, cw in enumerate(col_widths):
         t.columns[i].width = Inches(cw)
     for ri, row in enumerate(rows):
+        t.rows[ri].height = Inches(row_h)
         for ci, val in enumerate(row):
             c = t.cell(ri, ci)
             c.text = str(val)
+            c.vertical_anchor = MSO_ANCHOR.MIDDLE
             for r in c.text_frame.paragraphs[0].runs:
                 r.font.size = Pt(size)
                 r.font.name = font
+                if header_fill:
+                    r.font.color.rgb = rgb(header_text if ri == 0 else body_text)
+                    r.font.bold = ri == 0
+            if header_fill:
+                c.fill.solid()
+                c.fill.fore_color.rgb = rgb(header_fill if ri == 0 else (zebra if ri % 2 == 0 and zebra else "#FFFFFF"))
     return gf
 
 
@@ -465,6 +476,81 @@ def add_closing(prs, font, *, brand="#003087", text="Thank you", logo=None, empt
     if logo:
         add_picture_fit(s, logo, W - 4.2, H * 0.3, 3.4, 2.4)
     s.notes_slide.notes_text_frame.text = notes
+    return s
+
+
+# ------------------------------------------- default visual system (no template)
+
+def filled_rect(slide, x, y, w, h, color):
+    """Plain filled rectangle: no outline, no theme style (shadow, blue line)."""
+    shp = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
+    st = shp._element.find(qn("p:style"))
+    if st is not None:
+        shp._element.remove(st)
+    shp.fill.solid()
+    shp.fill.fore_color.rgb = rgb(color)
+    shp.line.fill.background()
+    shp.shadow.inherit = False
+    return shp
+
+
+def _blank_layout(prs):
+    for l in prs.slide_layouts:
+        if l.name.lower() == "blank":
+            return l
+    return next((l for l in prs.slide_layouts if len(l.placeholders) == 0), prs.slide_layouts[-1])
+
+
+def frame_slide(prs, title, *, brand, font, logo=None, footer_text="", page=None, title_size=28):
+    """Content slide with the default brand frame (deck-style.md section 4): a brand-colour
+    header band carrying the white title, and a light footer band with the logo (0.3 in
+    tall) or footer_text on the left and the plain page number on the right. The body area
+    starts at 1.75 in and ends above 7.0 in. Returns the slide."""
+    W, H = prs.slide_width / EMU, prs.slide_height / EMU
+    s = prs.slides.add_slide(_blank_layout(prs))
+    for p in list(s.placeholders):
+        p._element.getparent().remove(p._element)
+    filled_rect(s, 0, 0, W, 1.35, brand)
+    filled_rect(s, 0, H - 0.45, W, 0.45, "#F1F3F5")
+    textbox(s, 0.6, 0.2, W - 1.2, 0.95, [(title, {"size": title_size, "bold": True})], font,
+            color="#FFFFFF", anchor=MSO_ANCHOR.MIDDLE)
+    if logo:
+        from PIL import Image
+        iw, ih = Image.open(logo).size
+        s.shapes.add_picture(logo, Inches(0.6), Inches(H - 0.38), Inches(0.3 * iw / ih), Inches(0.3))
+    elif footer_text:
+        textbox(s, 0.6, H - 0.4, 6, 0.3, [(footer_text, {"size": 11})], font, color="#57606A", anchor=MSO_ANCHOR.MIDDLE)
+    if page is not None:
+        textbox(s, W - 1.6, H - 0.4, 1.0, 0.3, [(str(page), {"size": 11, "align": PP_ALIGN.RIGHT})], font,
+                color="#57606A", anchor=MSO_ANCHOR.MIDDLE)
+    return s
+
+
+def big_type_slide(prs, text, *, brand, font, subtitle=None, meta=(), icon=None, split_logo=None,
+                   size=60, light="#C9D6EA"):
+    """Title or section-divider slide: brand-colour background, big white left-aligned text
+    starting about 2.2 in down, a 24 pt subtitle, 14 pt meta lines (title slide), and one
+    visual: `icon` (a recoloured PNG) on the right, or, for a dark logo with no light
+    version, `split_logo`: a full-height white panel from x = 8.9 in carrying the logo."""
+    W, H = prs.slide_width / EMU, prs.slide_height / EMU
+    s = prs.slides.add_slide(_blank_layout(prs))
+    for p in list(s.placeholders):
+        p._element.getparent().remove(p._element)
+    set_background(s, brand)
+    width = 7.6 if split_logo else W - 1.2 - (3.8 if icon else 0)
+    textbox(s, 0.6, 2.0, width, 2.0, [(text, {"size": size, "bold": True})], font, color="#FFFFFF",
+            anchor=MSO_ANCHOR.BOTTOM, space=0)
+    y = 4.15
+    if subtitle:
+        textbox(s, 0.6, y, width, 0.9, [(subtitle, {"size": 24})], font, color=light, space=0)
+        y += 1.0
+    if meta:
+        textbox(s, 0.6, max(y, 5.4), width, 1.4, [(m, {"size": 14}) for m in meta], font, color=light, space=4)
+    if split_logo:
+        filled_rect(s, 8.9, 0, W - 8.9, H, "#FFFFFF")
+        add_picture_fit(s, split_logo, 8.9 + (W - 8.9 - 3.2) / 2, (H - 3.2) / 2, 3.2, 3.2)
+    elif icon:
+        add_picture_fit(s, icon, W - 4.4, (H - 3.4) / 2, 3.6, 3.4)
     return s
 
 

@@ -6,8 +6,8 @@ Read this before building a deck, and again before the quality gate. The rules a
 
 ## 1. Precedence
 
-- **A template exists** (a `.pptx` the user supplies or that sits in `docs/decks/samples/`): its fonts, colours, layouts, logo and artwork win. Section 3 bans apply only to shapes **you add** — never restyle or delete template elements to satisfy them. Section 2 copy rules always apply, except that a template's own fixed, non-placeholder design elements (e.g. the baked-in "Thank you" of its closing layout) are the template's authored content.
-  - **Strict layout reuse** (a real layout library): every slide is built from one of the template's own named layouts, never a hand-drawn approximation (see `reference/layout-reuse.md`).
+- **A template exists** (a `.pptx` found by the lookup order in `SKILL.md`): its fonts, colours, layouts, logo and artwork win. Section 3 bans apply only to shapes **you add** — never restyle or delete template elements to satisfy them. Section 2 copy rules always apply, except that a template's own fixed, non-placeholder design elements (e.g. the baked-in "Thank you" of its closing layout) are the template's authored content.
+  - **Strict layout reuse** (a real layout library): every slide is built from one of the template's own named layouts, never a hand-drawn approximation (see `layout-reuse.md`).
   - **Style only** (a loose reference deck, or the user prefers it): fonts, colours, positions and logo are extracted and reapplied to the skill's own brand-frame system (section 4).
 - **No template**: use the default visual system in section 4.
 - **The outline is the only source of content and terminology.** Its spelling of names and terms wins over the vocabulary bans below, and over the skill's own habits. If a banned word *is* the product's name for something in the outline, keep it (`--allow`). Never silently rewrite the outline's wording: report each conflict and let the user decide.
@@ -128,14 +128,14 @@ Use dividers to mark real sections: at most one per section, at most two in a de
 
 **Icons, logos and images.**
 
-- Icons: one open-source line-icon set for the whole deck. Default: [Lucide](https://lucide.dev) (ISC licence), fetched by name and rendered to a recoloured, transparent PNG with `<skill-dir>/icon_to_png.py` (see the script's header for usage). Only on big-type slides, or one small icon per item in a list where each item is a distinct thing. Never in card grids, never as bullet decoration.
+- Icons: one open-source line-icon set for the whole deck. Default: [Lucide](https://lucide.dev) (ISC licence), fetched by name and rendered to a recoloured, transparent PNG with `<skill-dir>/scripts/icon_to_png.py` (see the script's header for usage). Only on big-type slides, or one small icon per item in a list where each item is a distinct thing. Never in card grids, never as bullet decoration.
 - Logo: as settled in the brand questions — in the footer band (0.3 in tall, in place of the project name) and, if a light version exists, as the visual on the title slide.
 - Images: only user-provided or project-owned (screenshots, photos); no stock imagery.
 - If the icon tooling isn't available (no network, no LibreOffice, no Pillow), skip icons and use the logo or no visual — the big type carries the slide on its own.
 
 **Brand questions (always ask, before any styling).** Ask them in this order, via AskUserQuestion when available. Never fall back to a default palette or skip the logo without the user's answer.
 
-1. **Company logo.** Look in `docs/assets/logos/` first (create it if missing):
+1. **Company logo.** Find it by the lookup order in `SKILL.md` (the project default is `docs/assets/logos/`; create it if missing):
    - one file → offer "Use `<file>`" / "Use a different logo" / "No logo";
    - several → ask which one;
    - none → offer "I'll add one to `docs/assets/logos/`" (then wait until it's there) / "No logo — use the project name".
@@ -145,7 +145,7 @@ Use dividers to mark real sections: at most one per section, at most two in a de
 2. **Logo analysis (when there is a logo).** Run:
 
    ```bash
-   python3 <skill-dir>/logo_palette.py docs/assets/logos/<file> --swatch <scratch>/swatch.png
+   python3 <skill-dir>/scripts/logo_palette.py docs/assets/logos/<file> --swatch <scratch>/swatch.png
    ```
 
    It lists the logo's dominant colours and proposes a **brand** colour (the logo's main colour, darkened if needed so white titles on it reach 4.5 : 1 contrast) and a **highlight** (a second logo colour that reads on the brand colour, or a fallback it explains). Then Read both the logo and the swatch and check the proposal makes sense to the eye: a gradient, photo or tiny accent can mislead the script. Adjust if needed and say why. If the script can't run (no Pillow), Read the logo and propose the colours by eye, saying the hex values are estimates.
@@ -195,7 +195,7 @@ Run all three. Fix and regenerate until clean — never deliver a deck that fail
 **Step 1 — Lint (mandatory).** From the project root, where `<skill-dir>` is the directory containing this file (normally `.claude/skills/pitch-deck`):
 
 ```bash
-python3 <skill-dir>/lint_deck.py <deck.pptx> [--template] [--max-words N] [--allow TERM ...]
+python3 <skill-dir>/scripts/lint_deck.py <deck.pptx> [--template] [--max-words N] [--allow TERM ...]
 ```
 
 - `--template` — the deck was built on a template; skips the visual checks (they would flag the template's own shapes) and keeps the copy checks.

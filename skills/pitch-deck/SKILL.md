@@ -35,14 +35,16 @@ It never generates images. Images the outline describes become outlined placehol
 | Input | Required | Where it comes from |
 |---|---|---|
 | **Outline** (`outline.md`) | yes | the user names it, or look for `outline.md` in the project root and `docs/decks/`. See `outline-template.md` for the shape. |
-| **Template** (`.pptx`) | no | the user names it, the outline's front matter, or the newest `.pptx` in `docs/decks/samples/`. None: use the default visual system. |
-| **Logo** (PNG/JPG) | no | the user, the outline, or `docs/assets/logos/`. Not asked about when a template is used. |
+| **Template** (`.pptx`) | no | see lookup order below. None found: use the default visual system. |
+| **Logo** (PNG/JPG) | no | see lookup order below. Not asked about when a template is used. |
 
-Output goes to `docs/decks/` (create it, and `docs/decks/samples/`, if missing and tell the user). The filename comes from the outline, else `<title>_<YYYY-MM-DD>.pptx`.
+**Lookup order for the template and the logo**, first hit wins: (1) a path the user gives in the request; (2) the `Template:` / `Logo:` fields in the outline's front matter; (3) the project: `docs/decks/samples/` (the newest `.pptx`) and `docs/assets/logos/`; (4) the skill's own `assets/` folder (personal defaults for a user-level install). `docs/` always means the project, i.e. the directory Claude Code was started in, never the home directory or the skill folder. Say which file you picked and from where.
+
+Output goes to `docs/decks/` in the project (create it, and `docs/decks/samples/`, if missing and tell the user). The filename comes from the outline, else `<title>_<YYYY-MM-DD>.pptx`.
 
 Needs `python-pptx`. Optional: LibreOffice (`soffice`) and poppler (`pdftoppm`) for the render check; Pillow for the template analysis and the logo analysis. If something is missing, skip that step and say so; never install anything unprompted.
 
-Read `deck-style.md` now (copy rules, visual bans, default visual system, quality gate). Every rule there applies.
+Read `reference/deck-style.md` now (copy rules, visual bans, default visual system, quality gate). Every rule there applies.
 
 ## Build mode
 
@@ -61,7 +63,7 @@ Never apply a fix to the user's wording without their say-so. Ask once, with the
 
 If a template exists, read `reference/layout-reuse.md` and follow it: run `style_from_reference.py`, resolve its warnings, and render the layouts you intend to use. Ask the user: strict layout reuse (A) or style only (B), when both are plausible. Default to (A) for a real layout library.
 
-No template: run the brand questions in `deck-style.md` §4 (logo first, then colour template), one call each. Never pick a palette or skip the logo on the user's behalf.
+No template: run the brand questions in `reference/deck-style.md` §4 (logo first, then colour template), one call each. Never pick a palette or skip the logo on the user's behalf.
 
 ### Step 3: map slides to layouts, get approval
 
@@ -76,16 +78,16 @@ Get approval through **AskUserQuestion** (never a prose "shall I build it?"): on
 Write a Python script for this deck (keep it in the project, e.g. next to the outline, so single-slide edits can re-run it) and run it. Import the helpers:
 
 ```python
-import sys; sys.path.insert(0, "<skill-dir>")
+import sys; sys.path.insert(0, "<skill-dir>/scripts")
 from deck_lib import *
 ```
 
-`deck_lib.py` has the template opener, placeholder helpers, native charts with a manual plot layout (annotations can be positioned exactly), tables, placeholder boxes, the Thank-you slide, and the edit helpers. Read its docstrings before writing the script; use it instead of re-deriving python-pptx workarounds.
+`scripts/deck_lib.py` has the template opener, placeholder helpers, native charts with a manual plot layout (annotations can be positioned exactly), tables, placeholder boxes, the Thank-you slide, and the edit helpers. Read its docstrings before writing the script; use it instead of re-deriving python-pptx workarounds.
 
 Rules while building:
 
 - Content comes from the outline only. Bullets stay as written (after any approved fixes).
-- Layout (A): fill placeholders by `idx`; never leave template guidance text; delete unfilled placeholders (`scrub_placeholders`); keep filled decorative panels. Layout (B): the brand frame from `deck-style.md` §4.
+- Layout (A): fill placeholders by `idx`; never leave template guidance text; delete unfilled placeholders (`scrub_placeholders`); keep filled decorative panels. Layout (B): the brand frame from `reference/deck-style.md` §4.
 - Data: native charts and tables built from the outline's numbers, values labelled, one claim per slide, a `Source: ...` line when the outline gives one (the origin, never the outline's filename). Numbers with no source are listed in the hand-off.
 - Speaker notes on every slide: the outline's notes if given, else a short presenter script from the slide's own content. Put an image or diagram brief in the notes of every placeholder.
 - Hidden slides (`**Hidden:** yes`): `deck_lib.set_hidden`.
@@ -93,9 +95,9 @@ Rules while building:
 
 ### Step 5: quality gate
 
-1. `python3 <skill-dir>/lint_deck.py <deck.pptx> --max-words 60` (add `--template` in layout mode (A); `--allow` the outline's own terms). Fix and rebuild until exit 0; a fix that changes the user's wording goes back to the user first.
+1. `python3 <skill-dir>/scripts/lint_deck.py <deck.pptx> --max-words 60` (add `--template` in layout mode (A); `--allow` the outline's own terms). Fix and rebuild until exit 0; a fix that changes the user's wording goes back to the user first.
 2. Render check, if `soffice` and `pdftoppm` exist: convert to PDF, render pages, **read every image**. Look for clipped or overlapping text, titles that jump, unfilled placeholders ("Click to add text"), half-empty slides, anything from the bans. Hidden slides are skipped in the PDF, so page numbers after one are off by one. A font that isn't installed makes text wider than it will be; judge fit with that in mind.
-3. Editing pass (`deck-style.md` §5): do the titles tell the story, does every number trace to the outline, the 8-second test, rhythm.
+3. Editing pass (`reference/deck-style.md` §5): do the titles tell the story, does every number trace to the outline, the 8-second test, rhythm.
 
 ### Step 6: hand off
 
@@ -108,7 +110,7 @@ Triggered when a deck made by this skill already exists and the user asks for a 
 The user may also have edited the deck by hand, so **work on the file as it is, never regenerate the whole deck.**
 
 1. Identify the slide. Numbers are positions in the deck as it is now (hidden slides count); if the user means the outline's numbering and it differs, say which slide you'll edit. Confirm by title if there's any doubt (`find_slide`).
-2. Take a backup copy of the deck (scratch directory) and a snapshot: `python3 <skill-dir>/slide_guard.py snapshot <deck> <snapshot.json>`.
+2. Take a backup copy of the deck (scratch directory) and a snapshot: `python3 <skill-dir>/scripts/slide_guard.py snapshot <deck> <snapshot.json>`.
 3. If the change comes from the outline, re-read that slide's section only and run Step 1's checks on it alone.
 4. Apply the change in place with `deck_lib`: `clear_slide` keeps the title, footer and source placeholders and removes what the earlier build added; rebuild the slide's content; keep the template layout and the title's formatting (`set_text`). Add, delete and move with `add_slide`, `delete_slide`, `move_slide`. Don't touch other slides, the master, or the theme.
 5. Prove nothing else changed: `slide_guard.py compare <deck> <snapshot.json> --changed N` (and `--expect-count` when slides were added or removed). A failure means undo and redo.

@@ -1,16 +1,16 @@
 # Analysing a template and building from it
 
-Read this when a template `.pptx` is available (named by the user, or found in `docs/decks/samples/`). Slide count, order and content always come from the outline, never from the template. What varies is how much of the template's own construction gets reused:
+Read this when a template `.pptx` is available (found by the lookup order in `SKILL.md`). Slide count, order and content always come from the outline, never from the template. What varies is how much of the template's own construction gets reused:
 
 - **(A) Strict layout reuse**: every slide is built by instantiating one of the template's own named layouts (real masters, placeholders, fonts, logo, background art, embedded photos) and filling it. As many slides as the outline needs, as long as each is a real layout from that file, never a hand-drawn approximation.
-- **(B) Style only**: fonts, colours and positions are extracted and reapplied to the skill's own brand-frame system (`../deck-style.md` §4). Use it when the template is just one or two loose example slides, or the user prefers it.
+- **(B) Style only**: fonts, colours and positions are extracted and reapplied to the skill's own brand-frame system (`deck-style.md` §4). Use it when the template is just one or two loose example slides, or the user prefers it.
 
 (A) is far more faithful for a real design-system template. Default to it when the catalogue looks reusable.
 
 ## Step 1: run the extractor
 
 ```bash
-python3 <skill-dir>/style_from_reference.py <template.pptx> --out-dir <scratch>/logos --json <scratch>/style.json
+python3 <skill-dir>/scripts/style_from_reference.py <template.pptx> --out-dir <scratch>/logos --json <scratch>/style.json
 ```
 
 It is deterministic; do not improvise the analysis by eye. It reports:
@@ -41,20 +41,20 @@ Show the user the mapping (slide, role, chosen layout, why) for approval. Flag e
 
 1. Open the template as the base `Presentation`, drop its demo slides from `prs.slides._sldIdLst` (and `drop_rel`), which keeps masters and layouts, then `add_slide(layout)` per outline slide. `deck_lib.open_template` does this.
 2. Fill each placeholder by `idx` from the catalogue. Replace the template's instructional text entirely; never leave or append to it.
-3. Leave every non-placeholder design element as the layout defines it: background art, logo, decorative chrome, baked-in closing text. The visual bans in `../deck-style.md` §3 apply only to shapes this skill adds.
+3. Leave every non-placeholder design element as the layout defines it: background art, logo, decorative chrome, baked-in closing text. The visual bans in `deck-style.md` §3 apply only to shapes this skill adds.
 4. **A table, picture or chart placeholder may be narrower than the slide** (room reserved for a caption). If nothing else shares the space, stretch it to the content width: set the frame's `left`/`width`, and set each column's width explicitly (resizing the frame does not rescale a table's columns).
 5. **A text-type placeholder can secretly be the layout's decorative panel** (it carries its own fill). Check its `spPr` for a `solidFill` before deleting it. If it has one and spans a large area, leave it and fill it with something short, or choose another layout.
 6. **Delete every placeholder you don't fill** (`deck_lib.scrub_placeholders`), except those in rule 5. LibreOffice renders unfilled placeholders as "Click to add text".
 7. **Picture placeholders**: images the outline provides go in with `add_picture`. Images it only describes (prompts, "paste Fig. 3") become an outlined placeholder box with the brief in the speaker notes. The skill never generates images.
 8. **Setting text on a placeholder that already has runs drops their formatting** (the title can turn black and non-bold). Use `deck_lib.set_text`, which keeps the first run's properties.
 9. **Footers**: the layout's classification and source placeholders are filled (a `Source: ...` line on data slides) or deleted. Never leave template guidance text.
-10. **The Thank-you slide**: use the template's closing layout if the catalogue has one (see `../deck-style.md` §4). Otherwise `deck_lib.add_closing` builds a styled one on the empty layout.
+10. **The Thank-you slide**: use the template's closing layout if the catalogue has one (see `deck-style.md` §4). Otherwise `deck_lib.add_closing` builds a styled one on the empty layout.
 
 In (A), run the linter with `--template`.
 
 ## Step 4 (mode B): reconcile and build fresh
 
-- A logo in `docs/assets/logos/` wins over one extracted from the template; mention it if they differ and let the user choose. A logo the user approves from the template is saved there so later runs don't re-extract it.
-- Offer the extractor's `proposed_brand` / `proposed_highlight` as the "From the template" option in the colour question (`../deck-style.md` §4), with the hex values. The user approves it like any option.
+- A logo found by the lookup order in `SKILL.md` wins over one extracted from the template; mention it if they differ and let the user choose. A logo the user approves from the template is saved there so later runs don't re-extract it.
+- Offer the extractor's `proposed_brand` / `proposed_highlight` as the "From the template" option in the colour question (`deck-style.md` §4), with the hex values. The user approves it like any option.
 - The font comes from the extractor's `fonts.major` / `fonts.minor`.
 - Build with the default visual system: brand frame, big-type title and divider slides, the five layouts (Text, Text + visual, Full-width visual, Big number, Statement).

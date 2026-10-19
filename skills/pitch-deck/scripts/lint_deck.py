@@ -43,7 +43,7 @@ LEFTOVER = [r"click to add", r"lorem ipsum", r"\bTODO\b", r"<fill in", r"\bTBD\b
 EMOJI = re.compile("[\U0001F300-\U0001FAFF☀-➿⭐⬆↔-⇿]")
 SHORT_WORDS = {"a", "an", "the", "of", "to", "in", "on", "at", "by", "for", "or", "and"}
 FILLER_TITLES = re.compile(r"^(thank you|thanks|questions\??|q\s*&\s*a|any questions)\W*$", re.I)
-PLACEHOLDER_LABEL = "DIAGRAM PLACEHOLDER"
+PLACEHOLDER_LABEL = "PLACEHOLDER"  # [ IMAGE PLACEHOLDER ] / [ DIAGRAM PLACEHOLDER ] boxes
 PAGE_COUNTER = re.compile(r"^\s*(\d{1,3}\s*(/|of)\s*\d{1,3}|0\d)\s*$", re.I)
 GRID = 228600  # 0.25 in, for comparing slide layouts
 
@@ -107,7 +107,7 @@ def words(text):
     return re.findall(r"[A-Za-z0-9][\w'’.-]*", text)
 
 
-def check_copy(n, slide, title, rep, banned_re, max_words, is_first):
+def check_copy(n, slide, title, rep, banned_re, max_words, is_first, is_last=False, allow=()):
     title_text = title.text_frame.text.strip() if title is not None else ""
     notes = slide.notes_slide.notes_text_frame.text if slide.has_notes_slide else ""
     texts = [shape_text(sh) for sh in iter_shapes(slide.shapes)]
@@ -121,6 +121,8 @@ def check_copy(n, slide, title, rep, banned_re, max_words, is_first):
         if re.search(pat, everything, re.I):
             rep.warn(n, f"slop phrase pattern: /{pat}/")
     for pat in LEFTOVER:
+        if any(re.search(pat, a, re.I) for a in allow):
+            continue  # the outline itself talks about this phrase (--allow "click to add")
         if re.search(pat, everything, re.I):
             rep.error(n, f"leftover placeholder text matching /{pat}/")
     if EMOJI.search(everything):
@@ -146,7 +148,7 @@ def check_copy(n, slide, title, rep, banned_re, max_words, is_first):
                 rep.warn(n, f"title line ends with short word '{last}'")
         if re.search(r"\(\s*\d+\s*/\s*\d+\s*\)|\b\d+\s*/\s*\d+\s*$", title_text):
             rep.error(n, f"series counter in title: {title_text!r}")
-        if not is_first and FILLER_TITLES.match(title_text):
+        if not is_first and not is_last and FILLER_TITLES.match(title_text):  # the always-last Thank-you slide is intended
             rep.warn(n, f"filler closing slide: {title_text!r}")
 
     height = slide.part.package.presentation_part.presentation.slide_height
@@ -268,7 +270,7 @@ def check_visual(n, slide, title, prs, rep, fonts, accents, is_first):
             rep.error(n, f"eyebrow/kicker above the title: {text.strip()!r}")
         for p in sh.text_frame.paragraphs:
             if (not is_first and not is_title(sh, title) and p.alignment == PP_ALIGN.CENTER
-                    and p.text.strip() and PLACEHOLDER_LABEL not in text):
+                    and p.text.strip() and PLACEHOLDER_LABEL not in text and "[ QR ]" not in text):
                 rep.warn(n, f"centred body text: {p.text.strip()[:40]!r}")
             for r in p.runs:
                 if r.font.name:
@@ -294,7 +296,7 @@ def main():
     ap.add_argument("deck")
     ap.add_argument("--template", action="store_true", help="deck is built on a template: copy checks only")
     ap.add_argument("--max-words", type=int, default=60)
-    ap.add_argument("--allow", nargs="*", default=[], help="canonical terms exempt from the vocabulary ban")
+    ap.add_argument("--allow", nargs="*", default=[], help="terms from the outline exempt from the vocabulary ban; a phrase like \"click to add\" also silences the leftover-text check")
     args = ap.parse_args()
 
     prs = Presentation(args.deck)
@@ -305,7 +307,7 @@ def main():
     rep, fonts, accents, titles, bullets, layouts = Report(), set(), set(), [], [], []
     for n, slide in enumerate(prs.slides, start=1):
         title = find_title(slide)
-        t, b = check_copy(n, slide, title, rep, banned_re, args.max_words, n == 1)
+        t, b = check_copy(n, slide, title, rep, banned_re, args.max_words, n == 1, n == len(prs.slides), allow)
         titles.append(t)
         bullets.append(b)
         layouts.append(layout_signature(slide))
