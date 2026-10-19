@@ -15,10 +15,9 @@ The repo is organized into two top-level directories:
 
 ### `suites/project-docs/` — Project documentation suite
 
-Four skills for generating project deliverables, sharing a common `project_context.md` for project facts:
+Three skills for generating project deliverables, sharing a common `project_context.md` for project facts:
 
 - **`documentation/`** — versioned release documentation (User Guide and Technical Guide, `.docx`)
-- **`pitch-deck/`** — slide decks (`.pptx`): pitch decks, status decks, release-showcase decks
 - **`td/`** — Technology Disclosures: short research-paper-style writeups for IP/disclosure purposes
 - **`td-deck/`** — presentation decks (`.pptx`) derived from a completed TD, for IP review board and technical reviewer audiences
 
@@ -32,6 +31,7 @@ See `suites/project-docs/README.md` for install instructions and usage.
 
 <!-- List skills under skills/ here once any exist. Each entry: one line description + pointer to skills/<name>/SKILL.md. -->
 
+- **`pitch-deck`** — builds a `.pptx` deck from an `outline.md` on your own PowerPoint template (layouts, logo, icons) or a clean default, with native charts, a lint and render gate, an always-last Thank-you slide, and single-slide update mode ("redo slide 13"). It only acts on the outline; it doesn't read project docs or generate images. Triggers on "build the deck", "slides from the outline", "redo slide N". → [skills/pitch-deck/SKILL.md](skills/pitch-deck/SKILL.md)
 - **`grill-me`** — one-question-at-a-time design/plan interview with a resumable `checkpoint.md`. Triggers on `/grill-me`, "grill-me", or "brainstorm". → [skills/grill-me/SKILL.md](skills/grill-me/SKILL.md)
 - **`caveman`** — ultra-compressed ~75% token reduction mode that drops filler while keeping full technical accuracy. Triggers on `/caveman`, "caveman mode", or "less tokens". → [skills/caveman/SKILL.md](skills/caveman/SKILL.md)
 - **`handoff`** — compacts the current conversation into a resumable handoff document saved to the OS temp dir, so a fresh agent can continue without re-reading the full chat. → [skills/handoff/SKILL.md](skills/handoff/SKILL.md)
