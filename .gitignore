@@ -10,6 +10,10 @@ desktop.ini
 *.swo
 *~
 
+# Python
+__pycache__/
+*.pyc
+
 # Claude Code local data (sessions, memory, personal settings)
 .claude/
 

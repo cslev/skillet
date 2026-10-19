@@ -12,6 +12,26 @@ Without a template, it uses a clean default visual system in your logo's colours
 
 It acts only on the outline. Writing the outline is a separate step, done by hand or by an agent that reads your documents, papers or code. The skill adds no facts, doesn't reword your text without asking, and doesn't generate images.
 
+## Example
+
+This repo ships one worked example, made by the skill about itself:
+
+- [`docs/decks/outline.md`](../../docs/decks/outline.md) is the outline, written from this project.
+- [`docs/decks/PitchDeckSkill_2026-10-19.pptx`](../../docs/decks/PitchDeckSkill_2026-10-19.pptx) is the deck the skill built from it. There was no template, so the skill took the project logo (`cslev_logo.png`) and derived the colour template from it: dark teal for the frame and big-type slides, green as the highlight. The logo is dark, so the title slide is split with the logo on a white panel.
+
+The outline has a short deck section at the top (core message, audience, length, optional template and logo paths), then one section per slide. Each slide can set:
+
+- `Role`: title, divider, content or statement
+- `Layout hint`: text, text + visual, table, chart, diagram and so on; the skill picks one if you leave it out
+- `On slide`: the exact text to show
+- `Visual`: a file path, or a description that becomes an outlined placeholder
+- `Chart or table data`: markdown tables that become native charts and tables
+- `Source`: the line shown under data
+- `Speaker notes`: what to say, plus anything the audience shouldn't see
+- `Hidden`: keep the slide in the file but skip it in the show
+
+[`outline-template.md`](outline-template.md) shows the full format.
+
 ## What you give it
 
 | Input | Required | Notes |
