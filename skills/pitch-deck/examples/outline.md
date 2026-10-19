@@ -13,7 +13,7 @@
 - **Length:** 12 content slides plus 2 dividers, about 12 minutes.
 - **Filename:** PitchDeckSkill_2026-10-19.pptx
 - **Template:**
-- **Logo:** docs/assets/logos/cslev_logo.png
+- **Logo:** examples/cslev_logo.png
 - **Off-limits:** none.
 
 ---
@@ -57,7 +57,7 @@
 - Input: outline.md, required
 - Input: your template .pptx, optional
 - Input: your logo, optional
-- Output: a .pptx in docs/decks, ending in a Thank-you slide
+- Output: a .pptx in decks, ending in a Thank-you slide
 
 **Visual:** a flow from the three inputs, through the pitch-deck skill, to the finished deck. The outline box is drawn heavier than the other two inputs.
 
@@ -249,9 +249,9 @@ guard passed: 20 slides, only [13] changed
 
 **On slide:**
 - Copy skills/pitch-deck into .claude/skills in a project, or into your home .claude/skills
-- Put your template and logo in the project or the skill's assets folder
+- Put your template and logo in the project's decks folder
 - Write outline.md from the skill's template, then ask for the deck
 
 **Visual:** a QR code for github.com/cslev/skillet, supplied later.
 
-**Speaker notes:** Everything is in the skillet repository. The skill looks for the template and logo in a fixed order: the path you name, the outline's front matter, the project's docs folder, then the skill's own assets folder.
+**Speaker notes:** Everything is in the skillet repository. The skill looks for the template and logo in a fixed order: the path you name, the outline's front matter, the project's decks folder.

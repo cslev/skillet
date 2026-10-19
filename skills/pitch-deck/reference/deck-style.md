@@ -135,17 +135,17 @@ Use dividers to mark real sections: at most one per section, at most two in a de
 
 **Brand questions (always ask, before any styling).** Ask them in this order, via AskUserQuestion when available. Never fall back to a default palette or skip the logo without the user's answer.
 
-1. **Company logo.** Find it by the lookup order in `SKILL.md` (the project default is `docs/assets/logos/`; create it if missing):
+1. **Company logo.** Find it by the lookup order in `SKILL.md` (the project default is `decks/logos/`; create it if missing):
    - one file → offer "Use `<file>`" / "Use a different logo" / "No logo";
    - several → ask which one;
-   - none → offer "I'll add one to `docs/assets/logos/`" (then wait until it's there) / "No logo — use the project name".
+   - none → offer "I'll add one to `decks/logos/`" (then wait until it's there) / "No logo — use the project name".
 
    Logos must be PNG or JPG (python-pptx can't place SVG). A dark logo can't sit on the brand-colour slides: ask whether a light/white version exists; if not, offer the split title slide (below) or footer-only, and keep icons on the dividers and closing slide.
 
 2. **Logo analysis (when there is a logo).** Run:
 
    ```bash
-   python3 <skill-dir>/scripts/logo_palette.py docs/assets/logos/<file> --swatch <scratch>/swatch.png
+   python3 <skill-dir>/scripts/logo_palette.py decks/logos/<file> --swatch <scratch>/swatch.png
    ```
 
    It lists the logo's dominant colours and proposes a **brand** colour (the logo's main colour, darkened if needed so white titles on it reach 4.5 : 1 contrast) and a **highlight** (a second logo colour that reads on the brand colour, or a fallback it explains). Then Read both the logo and the swatch and check the proposal makes sense to the eye: a gradient, photo or tiny accent can mislead the script. Adjust if needed and say why. If the script can't run (no Pillow), Read the logo and propose the colours by eye, saying the hex values are estimates.

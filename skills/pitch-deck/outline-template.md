@@ -16,8 +16,8 @@ Keep slide numbers stable: "redo slide 13" refers to them.
 - **Audience:** who, and how technical.
 - **Length:** number of content slides, or a time slot.
 - **Filename:** `<Name>_<YYYY-MM-DD>.pptx` (optional; default `<Deck title>_<date>.pptx`).
-- **Template:** path to a `.pptx` (optional; else the lookup order in the skill: project `docs/decks/samples/`, then the skill's `assets/`).
-- **Logo:** path (optional; else `docs/assets/logos/`, then the skill's `assets/`).
+- **Template:** path to a `.pptx` (optional; else the newest `.pptx` in the project's `decks/templates/`).
+- **Logo:** path (optional; else `decks/logos/` in the project).
 - **Off-limits:** anything not to show (NDA, unreleased, names).
 
 The skill always adds a Thank-you slide at the end; don't list one.

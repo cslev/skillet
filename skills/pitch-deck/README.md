@@ -16,8 +16,8 @@ It acts only on the outline. Writing the outline is a separate step, done by han
 
 This repo ships one worked example, made by the skill about itself:
 
-- [`docs/decks/outline.md`](../../docs/decks/outline.md) is the outline, written from this project.
-- [`docs/decks/PitchDeckSkill_2026-10-19.pptx`](../../docs/decks/PitchDeckSkill_2026-10-19.pptx) is the deck the skill built from it. There was no template, so the skill took the project logo (`cslev_logo.png`) and derived the colour template from it: dark teal for the frame and big-type slides, green as the highlight. The logo is dark, so the title slide is split with the logo on a white panel.
+- [`examples/outline.md`](examples/outline.md) is the outline, written from this project.
+- [`examples/PitchDeckSkill_2026-10-19.pptx`](examples/PitchDeckSkill_2026-10-19.pptx) is the deck the skill built from it. There was no template, so the skill took the project logo (`cslev_logo.png`) and derived the colour template from it: dark teal for the frame and big-type slides, green as the highlight. The logo is dark, so the title slide is split with the logo on a white panel.
 
 The outline has a short deck section at the top (core message, audience, length, optional template and logo paths), then one section per slide. Each slide can set:
 
@@ -37,10 +37,10 @@ The outline has a short deck section at the top (core message, audience, length,
 | Input | Required | Notes |
 |---|---|---|
 | `outline.md` | yes | Copy [`outline-template.md`](outline-template.md). Per slide: role, assertion title, on-slide text, visual, chart or table data, source, speaker notes. Names, spellings and terms in the outline are used exactly. |
-| Template `.pptx` | no | Named by you, in the outline, in the project's `docs/decks/samples/`, or in the skill's own `assets/` (see [Where files go](#where-files-go)). Company templates with real layouts are used layout by layout; a loose example deck gives only its style (fonts, colours, positions, logo). |
-| Logo (PNG/JPG) | no | Named by you, in the outline, in `docs/assets/logos/`, or in the skill's `assets/`. Only needed without a template: it sets the brand colours. |
+| Template `.pptx` | no | Named by you, in the outline, or in the project's `decks/templates/` (see [Where files go](#where-files-go)). Company templates with real layouts are used layout by layout; a loose example deck gives only its style (fonts, colours, positions, logo). |
+| Logo (PNG/JPG) | no | Named by you, in the outline, or in the project's `decks/logos/`. Only needed without a template: it sets the brand colours. |
 
-Output goes to `docs/decks/` in your project.
+Output goes to `decks/` in your project.
 
 ## How it works
 
@@ -108,16 +108,15 @@ The skill needs `python-pptx`. LibreOffice and poppler (render check) and Pillow
 
 ## Where files go
 
-`docs/` always means the project, which is the directory Claude Code was started in. It is not `~/docs` and not a folder inside the skill. The skill creates `docs/decks/` (and `docs/decks/samples/`) there when it first runs.
+`decks/` always means a folder in the project, which is the directory Claude Code was started in. It is not `~/decks` and not a folder inside the skill. The skill creates `decks/`, `decks/templates/` and `decks/logos/` there when it first runs.
 
 The skill looks for the template and the logo in this order. The first match wins, and the skill says which one it used:
 
 1. a path you give in the request ("use ~/templates/corp.pptx")
 2. the `Template:` and `Logo:` lines at the top of `outline.md`
-3. the project: `docs/decks/samples/*.pptx` (the newest) and `docs/assets/logos/`
-4. the skill's own `assets/` folder
+3. the project: `decks/templates/*.pptx` (the newest) and `decks/logos/`
 
-With a per-project install, put the template in `docs/decks/samples/` and the logo in `docs/assets/logos/`. With a user-level install (`~/.claude/skills/`), the simplest option is to put `template.pptx` and your logo in `~/.claude/skills/pitch-deck/assets/` once. Every project then picks them up, and a project can override them with its own files or paths. If the template is confidential, add `docs/decks/samples/` to the project's `.gitignore`.
+Put your template in `decks/templates/` and your logo in `decks/logos/`, in each project where you use the skill. The skill doesn't look inside its own folder, whether it is installed per project or in `~/.claude/skills/`. To reuse one template across projects, name its path in the request or in the outline's `Template:` line. If the template is confidential, add `decks/templates/` to the project's `.gitignore`.
 
 ## What's in the folder
 
@@ -125,7 +124,7 @@ With a per-project install, put the template in `docs/decks/samples/` and the lo
 |---|---|
 | `SKILL.md` | the workflow Claude follows |
 | `outline-template.md` | the outline format to copy |
-| `assets/` | optional personal default template and logo for a user-level install |
+| `examples/` | a worked example for reference: the outline, the deck built from it, and the logo it used. The skill never uses these as defaults. |
 | `reference/deck-style.md` | copy rules, visual bans, default visual system, quality gate |
 | `reference/layout-reuse.md` | analysing a template, mapping slides to its layouts, building from them |
 | `scripts/deck_lib.py` | build and edit helpers: template opener, placeholders, native charts, tables, Thank-you slide |

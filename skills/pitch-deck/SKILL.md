@@ -34,13 +34,13 @@ It never generates images. Images the outline describes become outlined placehol
 
 | Input | Required | Where it comes from |
 |---|---|---|
-| **Outline** (`outline.md`) | yes | the user names it, or look for `outline.md` in the project root and `docs/decks/`. See `outline-template.md` for the shape. |
+| **Outline** (`outline.md`) | yes | the user names it, or look for `outline.md` in the project root and `decks/`. See `outline-template.md` for the shape. |
 | **Template** (`.pptx`) | no | see lookup order below. None found: use the default visual system. |
 | **Logo** (PNG/JPG) | no | see lookup order below. Not asked about when a template is used. |
 
-**Lookup order for the template and the logo**, first hit wins: (1) a path the user gives in the request; (2) the `Template:` / `Logo:` fields in the outline's front matter; (3) the project: `docs/decks/samples/` (the newest `.pptx`) and `docs/assets/logos/`; (4) the skill's own `assets/` folder (personal defaults for a user-level install). `docs/` always means the project, i.e. the directory Claude Code was started in, never the home directory or the skill folder. Say which file you picked and from where.
+**Lookup order for the template and the logo**, first hit wins: (1) a path the user gives in the request; (2) the `Template:` / `Logo:` fields in the outline's front matter; (3) the project: `decks/templates/` (the newest `.pptx`) and `decks/logos/`. Nothing inside the skill's own folder is ever used as a default; `examples/` is for reference only. `decks/` always means a folder in the project, i.e. the directory Claude Code was started in, never the home directory or the skill folder. Say which file you picked and from where.
 
-Output goes to `docs/decks/` in the project (create it, and `docs/decks/samples/`, if missing and tell the user). The filename comes from the outline, else `<title>_<YYYY-MM-DD>.pptx`.
+Output goes to `decks/` in the project (create it, with `decks/templates/` and `decks/logos/`, if missing, and tell the user). The filename comes from the outline, else `<title>_<YYYY-MM-DD>.pptx`.
 
 Needs `python-pptx`. Optional: LibreOffice (`soffice`) and poppler (`pdftoppm`) for the render check; Pillow for the template analysis and the logo analysis. If something is missing, skip that step and say so; never install anything unprompted.
 
