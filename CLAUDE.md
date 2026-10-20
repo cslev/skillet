@@ -60,8 +60,8 @@ Credits go in `CREDITS.md` only — never inside `SKILL.md`.
 
 ## README conventions
 
-Each skill entry in `README.md` is one line:
+Each skill entry in `README.md` is one line. The name links to the skill's `README.md` if it has one, otherwise to its `SKILL.md`:
 
 ```
-- **`name`** — what it does + key triggers. → [skills/name/SKILL.md](skills/name/SKILL.md)
+- **[`name`](skills/name/SKILL.md)** — what it does + key triggers.
 ```

@@ -13,15 +13,15 @@ The repo is organized into two top-level directories:
 
 ## Suites
 
-### `suites/project-docs/` — Project documentation suite
+### [`suites/project-docs/`](suites/project-docs/README.md) — Project documentation suite
 
 Three skills for generating project deliverables, sharing a common `project_context.md` for project facts:
 
-- **`documentation/`** — versioned release documentation (User Guide and Technical Guide, `.docx`)
-- **`td/`** — Technology Disclosures: short research-paper-style writeups for IP/disclosure purposes
-- **`td-deck/`** — presentation decks (`.pptx`) derived from a completed TD, for IP review board and technical reviewer audiences
+- **[`documentation/`](suites/project-docs/documentation/SKILL.md)** — versioned release documentation (User Guide and Technical Guide, `.docx`)
+- **[`td/`](suites/project-docs/td/SKILL.md)** — Technology Disclosures: short research-paper-style writeups for IP/disclosure purposes
+- **[`td-deck/`](suites/project-docs/td-deck/SKILL.md)** — presentation decks (`.pptx`) derived from a completed TD, for IP review board and technical reviewer audiences
 
-See `suites/project-docs/README.md` for install instructions and usage.
+See the [suite README](suites/project-docs/README.md) for install instructions and usage.
 
 <!-- Add more suites here as they're created. -->
 
@@ -29,14 +29,15 @@ See `suites/project-docs/README.md` for install instructions and usage.
 
 ## Standalone skills
 
-<!-- List skills under skills/ here once any exist. Each entry: one line description + pointer to skills/<name>/SKILL.md. -->
+<!-- Each entry: skill name linked to skills/<name>/README.md if it has one, otherwise skills/<name>/SKILL.md, then a one-line description and its triggers. -->
 
-- **`pitch-deck`** — builds a `.pptx` deck from an `outline.md` on your own PowerPoint template (layouts, logo, icons) or a clean default, with native charts, a lint and render gate, an always-last Thank-you slide, and single-slide update mode ("redo slide 13"). It only acts on the outline; it doesn't read project docs or generate images. Triggers on "build the deck", "slides from the outline", "redo slide N". → [skills/pitch-deck/SKILL.md](skills/pitch-deck/SKILL.md)
-- **`grill-me`** — one-question-at-a-time design/plan interview with a resumable `checkpoint.md`. Triggers on `/grill-me`, "grill-me", or "brainstorm". → [skills/grill-me/SKILL.md](skills/grill-me/SKILL.md)
-- **`caveman`** — ultra-compressed ~75% token reduction mode that drops filler while keeping full technical accuracy. Triggers on `/caveman`, "caveman mode", or "less tokens". → [skills/caveman/SKILL.md](skills/caveman/SKILL.md)
-- **`handoff`** — compacts the current conversation into a resumable handoff document saved to the OS temp dir, so a fresh agent can continue without re-reading the full chat. → [skills/handoff/SKILL.md](skills/handoff/SKILL.md)
-- **`security-audit`** — fourteen concrete vulnerability patterns, each with a detection command, a reproduction step, the false alarms that look identical, and what a regression test must assert. Triggers on `/security-audit`, "security review", "audit this codebase", or a named class such as CSRF or replay. → [skills/security-audit/SKILL.md](skills/security-audit/SKILL.md)
-- **`humanizer`** — removes AI writing patterns (em dashes, significance inflation, rule-of-three, AI vocabulary, etc.) from text using a 33-pattern taxonomy with Before/After examples. Triggers on "humanize", "remove AI writing", "make this sound human". → [skills/humanizer/SKILL.md](skills/humanizer/SKILL.md)
+- **[`pitch-deck`](skills/pitch-deck/README.md)** — builds a `.pptx` deck from an `outline.md` on your own PowerPoint template (layouts, logo, icons) or a clean default, with native charts, a lint and render gate, an always-last Thank-you slide, and single-slide update mode ("redo slide 13"). It only acts on the outline; it doesn't read project docs or generate images. Triggers on `/pitch-deck`, "build the deck from outline.md", "slides from the outline", or "redo slide N".
+- **[`grill-me`](skills/grill-me/SKILL.md)** — one-question-at-a-time design/plan interview with a resumable `checkpoint.md`. Triggers on `/grill-me`, "grill-me", or "brainstorm".
+- **[`caveman`](skills/caveman/SKILL.md)** — ultra-compressed ~75% token reduction mode that drops filler while keeping full technical accuracy. Triggers on `/caveman`, "caveman mode", or "less tokens".
+- **[`handoff`](skills/handoff/SKILL.md)** — compacts the current conversation into a resumable handoff document saved to the OS temp dir, so a fresh agent can continue without re-reading the full chat.
+- **[`security-audit`](skills/security-audit/SKILL.md)** — fourteen concrete vulnerability patterns, each with a detection command, a reproduction step, the false alarms that look identical, and what a regression test must assert. Triggers on `/security-audit`, "security review", "audit this codebase", or a named class such as CSRF or replay.
+- **[`humanizer`](skills/humanizer/SKILL.md)** — removes AI writing patterns (em dashes, significance inflation, rule-of-three, AI vocabulary, etc.) from text using a 33-pattern taxonomy with Before/After examples. Triggers on "humanize", "remove AI writing", "make this sound human".
+- **[`cybersec-blogger`](skills/cybersec-blogger/SKILL.md)** — writes, edits and brainstorms Medium blog posts in cslev's cybersecurity, privacy and self-hosting voice: technically sound, with the author's humour, plus titles, subtitles, tags and image prompts. Triggers on "write a blog post", "help me blog about X", or a draft to rewrite in the blog's style.
 
 ---
 
